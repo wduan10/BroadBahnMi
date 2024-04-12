@@ -1,5 +1,6 @@
 print('hello world!')
 
+import numpy as np
 import torch
 
-print('test', torch.cuda.is_available())
+print(torch.cuda.is_available())
