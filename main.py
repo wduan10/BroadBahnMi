@@ -2,4 +2,4 @@ print('hello world!')
 
 import torch
 
-print(torch.cuda.is_available())
+print('test', torch.cuda.is_available())
