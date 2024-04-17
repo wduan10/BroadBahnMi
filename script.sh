@@ -14,14 +14,8 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --partition=gpu
 
-# source /home/wduan/venvs/CS156b/bin/activate
-
-# cd /central/groups/CS156b/2024/BroadBahnMi/
-
-# python main.py
-
-source /home/oxu/my_venv/cs156b/bin/activate 
+source /home/wduan/venvs/CS156b/bin/activate
 
 cd /central/groups/CS156b/2024/BroadBahnMi/
 
-python visualize_data.py
+python main.py
