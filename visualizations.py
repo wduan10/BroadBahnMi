@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 
 data = pd.read_csv("train2023.csv")
 disease_columns = data.columns[7:19]
@@ -102,3 +103,15 @@ for i, category in enumerate(counts_df.index):
 # plt.grid(True)
 # plt.tight_layout()
 # plt.show()
+
+data = pd.read_csv("train2023.csv")
+if 'LL' in data.columns:
+    data = data.drop('LL', axis=1)
+view_counts = data['AP/PA'].value_counts()
+plt.figure(figsize=(8, 6))
+view_counts.plot(kind='bar', color=['blue', 'green'])
+plt.title('Frequency of AP vs. PA Views')
+plt.xlabel('View Type')
+plt.ylabel('Frequency')
+plt.xticks(rotation=0)
+plt.show()
