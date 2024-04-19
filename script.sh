@@ -14,7 +14,7 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --partition=gpu
 
-source /home/wduan/venvs/CS156b/bin/activate
+source /home/oxu/my_env/bin/activate
 
 cd /central/groups/CS156b/2024/BroadBahnMi/
 
