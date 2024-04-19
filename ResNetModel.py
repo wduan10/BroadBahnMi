@@ -17,18 +17,16 @@ import numpy as np
 from PIL import Image
 
 # code for hpc:
-# labels_path = '/groups/CS156b/data/student_labels/train2023.csv'
-# img_dir = '/groups/CS156b/data/train'
+labels_path_train = '/groups/CS156b/data/student_labels/train2023.csv'
+img_dir_train = '/groups/CS156b/data/train'
 
-# code for local:
-
-# Training  
-labels_path_train = 'data/train/labels/labels.csv'
-img_dir_train = 'data/train/images'
+# Training local  
+# labels_path_train = 'data/train/labels/labels.csv'
+# img_dir_train = 'data/train/images'
 
 # Test 
-labels_path_test = 'data/test/ids.csv'
-img_dir_test = 'data/test/images'
+labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
+img_dir_test = '/groups/CS156b/data/test'
 
 df_train = pd.read_csv(labels_path_train, delimiter='\t')[:-1]
 df_test = pd.read_csv(labels_path_test, delimiter='\t')[:-1]
@@ -52,7 +50,7 @@ class CustomImageDataset(Dataset):
 
         # image = read_image(img_path)
         image = Image.open(img_path) # PIL image for applying transform for pre-trained ResNet model 
-        image = Image.fromarray(np.stack((image,)*3, axis=-1)) # convert to RGB
+        image = Image.fromarray(np.stack((image,)*3, axis=-1)) # greyscale to RGB
         label = list(row[-9:]) # extract label, the last 9 columns
 
         if self.transform:
