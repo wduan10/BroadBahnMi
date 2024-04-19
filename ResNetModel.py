@@ -88,7 +88,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor = 0.1, patience=5)
 
-n_epochs = 200
+n_epochs = 15 
 
 for epoch in range(n_epochs):
     losses = []
