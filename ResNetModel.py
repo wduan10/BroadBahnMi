@@ -25,11 +25,11 @@ img_dir_train = '/groups/CS156b/data/train'
 # img_dir_train = 'data/train/images'
 
 # Test 
-labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
-img_dir_test = '/groups/CS156b/data/test'
+# labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
+# img_dir_test = '/groups/CS156b/data/test'
 
-# labels_path_test = 'data/test/ids.csv'
-# img_dir_test = 'data/test/images'
+labels_path_test = 'data/test/ids.csv'
+img_dir_test = 'data/test/images'
 
 df_train = pd.read_csv(labels_path_train, delimiter='\t')[:-1]
 df_test = pd.read_csv(labels_path_test, delimiter='\t')[:-1]
@@ -84,7 +84,7 @@ classes = ['No Finding', 'Enlarged Cardiomediastinum', 'Cardiomegaly', 'Lung Opa
 model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=True)
 
 if torch.cuda.is_available():
-    model.to_cuda()
+    model.to('cuda')
 model.eval()
 
 criterion = nn.CrossEntropyLoss()
