@@ -1,101 +1,26 @@
-	Unnamed: 0.1	Unnamed: 0	Path	Sex	Age	Frontal/Lateral	AP/PA	No Finding	Enlarged Cardiomediastinum	Cardiomegaly	Lung Opacity	Pneumonia	Pleural Effusion	Pleural Other	Fracture	Support Devices
-0	0	0	train/pid50512/study1/view1_frontal.jpg	Female	68	Frontal	AP	1.0								1.0
-1	1	1	train/pid21580/study2/view1_frontal.jpg	Female	87	Frontal	AP	-1.0		0.0	1.0		0.0		1.0	
-2	2	2	train/pid21580/study1/view1_frontal.jpg	Female	83	Frontal	AP	-1.0			1.0				1.0	
-3	3	3	train/pid21580/study1/view2_lateral.jpg	Female	83	Lateral		-1.0			1.0				1.0	
-4	4	4	train/pid33839/study1/view1_frontal.jpg	Male	41	Frontal	AP	-1.0								
-5	5	5	train/pid17532/study1/view1_frontal.jpg	Female	20	Frontal	PA	1.0	-1.0				-1.0			
-6	6	6	train/pid17532/study1/view2_lateral.jpg	Female	20	Lateral		1.0	-1.0				-1.0			
-7	7	11	train/pid05208/study1/view1_frontal.jpg	Female	42	Frontal	AP	1.0	-1.0				-1.0			
-8	8	12	train/pid35409/study1/view1_frontal.jpg	Male	69	Frontal	AP	-1.0		1.0	1.0		-1.0		-1.0	1.0
-9	9	13	train/pid35409/study2/view1_frontal.jpg	Male	69	Frontal	AP	-1.0	1.0		1.0		-1.0		-1.0	1.0
-10	10	14	train/pid27777/study1/view1_frontal.jpg	Male	81	Frontal	AP	-1.0			1.0		1.0			1.0
-11	11	15	train/pid27777/study2/view1_frontal.jpg	Male	81	Frontal	AP	-1.0			1.0		1.0			1.0
-12	12	16	train/pid50113/study1/view1_frontal.jpg	Male	76	Frontal	PA	-1.0		1.0						
-13	13	17	train/pid50113/study1/view2_lateral.jpg	Male	76	Lateral		-1.0		1.0						
-14	14	20	train/pid18261/study13/view1_frontal.jpg	Female	22	Frontal	PA	0.0	-1.0				-1.0			
-15	15	21	train/pid18261/study13/view2_lateral.jpg	Female	22	Lateral		0.0	-1.0				-1.0			
-16	16	22	train/pid18261/study1/view1_frontal.jpg	Female	19	Frontal	AP	-1.0			1.0		0.0			1.0
-17	17	23	train/pid18261/study5/view1_frontal.jpg	Female	19	Frontal	AP	-1.0			1.0					1.0
-18	18	24	train/pid18261/study7/view1_frontal.jpg	Female	19	Frontal	AP	-1.0			1.0					1.0
-19	19	25	train/pid18261/study4/view1_frontal.jpg	Female	19	Frontal	AP	-1.0			1.0		0.0			1.0
-20	20	26	train/pid18261/study2/view1_frontal.jpg	Female	19	Frontal	AP	-1.0			1.0		1.0			1.0
-21	21	27	train/pid18261/study10/view1_frontal.jpg	Female	19	Frontal	AP	-1.0			1.0		1.0			1.0
-22	22	28	train/pid18261/study9/view1_frontal.jpg	Female	19	Frontal	AP	-1.0	0.0		0.0		1.0			1.0
-23	23	29	train/pid18261/study11/view1_frontal.jpg	Female	19	Frontal	AP	-1.0			1.0		1.0			1.0
-24	24	30	train/pid18261/study8/view1_frontal.jpg	Female	19	Frontal	AP	-1.0			1.0					1.0
-25	25	31	train/pid18261/study12/view1_frontal.jpg	Female	19	Frontal	AP	-1.0		1.0			1.0			1.0
-26	26	32	train/pid18261/study3/view1_frontal.jpg	Female	19	Frontal	AP	-1.0			1.0					1.0
-27	27	33	train/pid18261/study6/view1_frontal.jpg	Female	19	Frontal	AP	-1.0			1.0					1.0
-28	28	34	train/pid21844/study3/view1_frontal.jpg	Female	61	Frontal	PA	-1.0	-1.0			-1.0	1.0			1.0
-29	29	35	train/pid21844/study3/view2_lateral.jpg	Female	61	Lateral		-1.0	-1.0			-1.0	1.0			1.0
-30	30	36	train/pid21844/study2/view1_frontal.jpg	Female	55	Frontal	PA	-1.0	0.0	0.0	-1.0		-1.0			1.0
-31	31	37	train/pid21844/study2/view2_lateral.jpg	Female	55	Lateral		-1.0	0.0	0.0	-1.0		-1.0			1.0
-32	32	38	train/pid21844/study1/view1_frontal.jpg	Female	55	Frontal	PA	-1.0	-1.0	-1.0			-1.0			1.0
-33	33	39	train/pid21844/study1/view2_lateral.jpg	Female	55	Lateral		-1.0	-1.0	-1.0			-1.0			1.0
-34	34	40	train/pid36894/study1/view1_frontal.jpg	Male	36	Frontal	PA	1.0	-1.0	-1.0			-1.0			
-35	35	41	train/pid36894/study1/view2_lateral.jpg	Male	36	Lateral		1.0	-1.0	-1.0			-1.0			
-36	36	48	train/pid28324/study1/view1_frontal.jpg	Female	56	Frontal	AP	1.0		-1.0						1.0
-37	37	49	train/pid28324/study2/view1_frontal.jpg	Female	56	Frontal	AP	-1.0	0.0				0.0			1.0
-38	38	50	train/pid37350/study1/view1_frontal.jpg	Male	44	Frontal	PA	-1.0	-1.0		1.0		1.0			
-39	39	51	train/pid37350/study1/view2_lateral.jpg	Male	44	Lateral		-1.0	-1.0		1.0		1.0			
-40	40	52	train/pid23187/study1/view1_frontal.jpg	Female	46	Frontal	PA	-1.0								
-41	41	53	train/pid23187/study1/view2_lateral.jpg	Female	46	Lateral		-1.0								
-42	42	54	train/pid23187/study4/view1_frontal.jpg	Female	50	Frontal	AP	-1.0		0.0	1.0		1.0			-1.0
-43	43	55	train/pid23187/study3/view1_frontal.jpg	Female	46	Frontal	AP	-1.0	0.0				1.0			
-44	44	56	train/pid23187/study2/view1_frontal.jpg	Female	46	Frontal	AP	-1.0			1.0					-1.0
-45	45	58	train/pid50992/study1/view1_frontal.jpg	Female	36	Frontal	PA	1.0								
-46	46	59	train/pid34607/study2/view1_frontal.jpg	Female	55	Frontal	PA	-1.0			1.0		1.0			
-47	47	60	train/pid34607/study2/view2_lateral.jpg	Female	55	Lateral		-1.0			1.0		1.0			
-48	48	61	train/pid34607/study1/view1_frontal.jpg	Female	55	Frontal	AP	-1.0					1.0			
-49	49	62	train/pid48948/study1/view1_frontal.jpg	Male	59	Frontal	PA	0.0							0.0	
-50	50	63	train/pid48948/study1/view2_lateral.jpg	Male	59	Lateral		0.0							0.0	
-51	51	64	train/pid48948/study4/view1_frontal.jpg	Male	62	Frontal	PA	-1.0		-1.0	1.0		1.0			1.0
-52	52	65	train/pid48948/study4/view2_lateral.jpg	Male	62	Lateral		-1.0		-1.0	1.0		1.0			1.0
-53	53	66	train/pid48948/study11/view1_frontal.jpg	Male	68	Frontal	PA	-1.0			1.0		1.0			
-54	54	67	train/pid48948/study11/view2_lateral.jpg	Male	68	Lateral		-1.0			1.0		1.0			
-55	55	68	train/pid48948/study2/view1_frontal.jpg	Male	62	Frontal	PA	-1.0					1.0			
-56	56	69	train/pid48948/study2/view2_lateral.jpg	Male	62	Lateral		-1.0					1.0			
-57	57	70	train/pid48948/study10/view1_frontal.jpg	Male	68	Frontal	PA	-1.0			1.0		1.0			
-58	58	71	train/pid48948/study10/view2_lateral.jpg	Male	68	Lateral		-1.0			1.0		1.0			
-59	59	72	train/pid48948/study5/view1_frontal.jpg	Male	63	Frontal	PA	1.0			-1.0		-1.0			
-60	60	73	train/pid48948/study5/view2_lateral.jpg	Male	63	Lateral		1.0			-1.0		-1.0			
-61	61	74	train/pid48948/study8/view1_frontal.jpg	Male	67	Frontal	PA	-1.0		1.0	1.0		1.0			1.0
-62	62	75	train/pid48948/study8/view2_lateral.jpg	Male	67	Lateral		-1.0		1.0	1.0		1.0			1.0
-63	63	76	train/pid48948/study6/view1_frontal.jpg	Male	67	Frontal	PA	-1.0	-1.0	-1.0	-1.0		1.0			
-64	64	77	train/pid48948/study6/view2_lateral.jpg	Male	67	Lateral		-1.0	-1.0	-1.0	-1.0		1.0			
-65	65	78	train/pid48948/study9/view1_frontal.jpg	Male	67	Frontal	PA	-1.0		0.0	1.0		1.0			1.0
-66	66	79	train/pid48948/study9/view2_lateral.jpg	Male	67	Lateral		-1.0		0.0	1.0		1.0			1.0
-67	67	80	train/pid48948/study3/view1_frontal.jpg	Male	62	Frontal	AP	-1.0			1.0	0.0	1.0			
-68	68	81	train/pid48948/study7/view1_frontal.jpg	Male	67	Frontal	AP	-1.0	-1.0		1.0		1.0	1.0		1.0
-69	69	82	train/pid21528/study2/view1_frontal.jpg	Female	78	Frontal	PA	-1.0								
-70	70	83	train/pid21528/study2/view2_lateral.jpg	Female	78	Lateral		-1.0								
-71	71	84	train/pid21528/study1/view1_frontal.jpg	Female	78	Frontal	AP	-1.0	0.0		1.0					1.0
-72	72	85	train/pid03797/study2/view1_frontal.jpg	Male	64	Frontal	PA	-1.0	0.0		1.0		1.0			
-73	73	86	train/pid03797/study2/view2_lateral.jpg	Male	64	Lateral		-1.0	0.0		1.0		1.0			
-74	74	87	train/pid03797/study1/view1_frontal.jpg	Male	64	Frontal	PA	1.0		-1.0			-1.0			
-75	75	88	train/pid03797/study1/view2_lateral.jpg	Male	64	Lateral		1.0		-1.0			-1.0			
-76	76	93	train/pid19594/study1/view1_frontal.jpg	Male	70	Frontal	PA	0.0	-1.0		0.0		-1.0			
-77	77	94	train/pid19594/study2/view1_frontal.jpg	Male	71	Frontal	AP	-1.0		-1.0			-1.0			
-78	78	95	train/pid17112/study1/view1_frontal.jpg	Female	37	Frontal	AP	-1.0			1.0					1.0
-79	79	97	train/pid40285/study1/view1_frontal.jpg	Male	88	Frontal	AP	-1.0			1.0					1.0
-80	80	98	train/pid40285/study3/view1_frontal.jpg	Male	89	Frontal	AP	-1.0	1.0				1.0			
-81	81	99	train/pid40285/study2/view1_frontal.jpg	Male	88	Frontal	AP	-1.0	0.0		1.0					
-82	82	100	train/pid39530/study1/view1_frontal.jpg	Male	63	Frontal	PA	1.0	-1.0				-1.0			
-83	83	101	train/pid39530/study1/view2_lateral.jpg	Male	63	Lateral		1.0	-1.0				-1.0			
-84	84	103	train/pid35181/study1/view1_frontal.jpg	Male	45	Frontal	AP	-1.0			1.0	0.0				
-85	85	108	train/pid17046/study1/view1_frontal.jpg	Male	63	Frontal	AP	-1.0	-1.0		1.0					
-86	86	109	train/pid12653/study1/view1_frontal.jpg	Female	63	Frontal	PA	0.0		-1.0			-1.0			
-87	87	110	train/pid12653/study1/view2_lateral.jpg	Female	63	Lateral		0.0		-1.0			-1.0			
-88	88	111	train/pid11959/study1/view1_frontal.jpg	Male	78	Frontal	AP	-1.0			1.0		1.0			1.0
-89	89	112	train/pid11959/study2/view1_frontal.jpg	Male	78	Frontal	AP	-1.0			1.0		1.0			1.0
-90	90	113	train/pid11959/study3/view1_frontal.jpg	Male	78	Frontal	AP	-1.0			1.0		1.0			1.0
-91	91	114	train/pid29701/study8/view1_frontal.jpg	Female	37	Frontal	AP	-1.0			1.0		1.0			
-92	92	115	train/pid29701/study1/view1_frontal.jpg	Female	37	Frontal	PA	-1.0					1.0			
-93	93	116	train/pid29701/study1/view2_lateral.jpg	Female	37	Lateral		-1.0					1.0			
-94	94	117	train/pid29701/study10/view1_frontal.jpg	Female	38	Frontal	AP	-1.0	0.0					1.0		1.0
-95	95	118	train/pid29701/study4/view1_frontal.jpg	Female	37	Frontal	AP	-1.0			1.0		1.0			1.0
-96	96	119	train/pid29701/study3/view1_frontal.jpg	Female	37	Frontal	AP	-1.0	0.0		0.0				1.0	-1.0
-97	97	120	train/pid29701/study7/view1_frontal.jpg	Female	37	Frontal	AP	-1.0			1.0		1.0			
-98	98	121	train/pid29701/study9/view1_frontal.jpg	Female	37	Frontal	AP	-1.0	0.0		1.0		0.0		1.0	1.0
-99	99	122	train/pid29701/study6/view1_frontal.jpg	Female	37	Frontal	AP	-1.0			1.0					1.0
+,Unnamed: 0,Unnamed: 0.1,Unnamed: 0.1.1,Unnamed: 0.1.1.1,Path,Sex,Age,Frontal/Lateral,AP/PA,No Finding,Enlarged Cardiomediastinum,Cardiomegaly,Lung Opacity,Pneumonia,Pleural Effusion,Pleural Other,Fracture,Support Devices
+0,0,0,0,0,train/pid50512/study1/view1_frontal.jpg,Female,68,Frontal,AP,1.0,,,,,,,,1.0
+1,1,1,1,1,train/pid21580/study2/view1_frontal.jpg,Female,87,Frontal,AP,-1.0,,0.0,1.0,,0.0,,1.0,
+2,2,2,2,2,train/pid21580/study1/view1_frontal.jpg,Female,83,Frontal,AP,-1.0,,,1.0,,,,1.0,
+3,3,3,3,3,train/pid21580/study1/view2_lateral.jpg,Female,83,Lateral,,-1.0,,,1.0,,,,1.0,
+4,4,4,4,4,train/pid33839/study1/view1_frontal.jpg,Male,41,Frontal,AP,-1.0,,,,,,,,
+5,5,5,5,5,train/pid17532/study1/view1_frontal.jpg,Female,20,Frontal,PA,1.0,-1.0,,,,-1.0,,,
+6,6,6,6,6,train/pid17532/study1/view2_lateral.jpg,Female,20,Lateral,,1.0,-1.0,,,,-1.0,,,
+7,7,7,7,11,train/pid05208/study1/view1_frontal.jpg,Female,42,Frontal,AP,1.0,-1.0,,,,-1.0,,,
+8,8,8,8,12,train/pid35409/study1/view1_frontal.jpg,Male,69,Frontal,AP,-1.0,,1.0,1.0,,-1.0,,-1.0,1.0
+9,9,9,9,13,train/pid35409/study2/view1_frontal.jpg,Male,69,Frontal,AP,-1.0,1.0,,1.0,,-1.0,,-1.0,1.0
+10,10,10,10,14,train/pid27777/study1/view1_frontal.jpg,Male,81,Frontal,AP,-1.0,,,1.0,,1.0,,,1.0
+11,11,11,11,15,train/pid27777/study2/view1_frontal.jpg,Male,81,Frontal,AP,-1.0,,,1.0,,1.0,,,1.0
+12,12,12,12,16,train/pid50113/study1/view1_frontal.jpg,Male,76,Frontal,PA,-1.0,,1.0,,,,,,
+13,13,13,13,17,train/pid50113/study1/view2_lateral.jpg,Male,76,Lateral,,-1.0,,1.0,,,,,,
+14,14,14,14,20,train/pid18261/study13/view1_frontal.jpg,Female,22,Frontal,PA,0.0,-1.0,,,,-1.0,,,
+15,15,15,15,21,train/pid18261/study13/view2_lateral.jpg,Female,22,Lateral,,0.0,-1.0,,,,-1.0,,,
+16,16,16,16,22,train/pid18261/study1/view1_frontal.jpg,Female,19,Frontal,AP,-1.0,,,1.0,,0.0,,,1.0
+17,17,17,17,23,train/pid18261/study5/view1_frontal.jpg,Female,19,Frontal,AP,-1.0,,,1.0,,,,,1.0
+18,18,18,18,24,train/pid18261/study7/view1_frontal.jpg,Female,19,Frontal,AP,-1.0,,,1.0,,,,,1.0
+19,19,19,19,25,train/pid18261/study4/view1_frontal.jpg,Female,19,Frontal,AP,-1.0,,,1.0,,0.0,,,1.0
+20,20,20,20,26,train/pid18261/study2/view1_frontal.jpg,Female,19,Frontal,AP,-1.0,,,1.0,,1.0,,,1.0
+21,21,21,21,27,train/pid18261/study10/view1_frontal.jpg,Female,19,Frontal,AP,-1.0,,,1.0,,1.0,,,1.0
+22,22,22,22,28,train/pid18261/study9/view1_frontal.jpg,Female,19,Frontal,AP,-1.0,0.0,,0.0,,1.0,,,1.0
+23,23,23,23,29,train/pid18261/study11/view1_frontal.jpg,Female,19,Frontal,AP,-1.0,,,1.0,,1.0,,,1.0
+24,24,24,24,30,train/pid18261/study8/view1_frontal.jpg,Female,19,Frontal,AP,-1.0,,,1.0,,,,,1.0

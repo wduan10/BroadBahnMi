@@ -16,27 +16,29 @@ from torch.utils.data import DataLoader
 import numpy as np
 from PIL import Image
 
-# code for hpc:
-labels_path_train = '/groups/CS156b/data/student_labels/train2023.csv'
-img_dir_train = '/groups/CS156b/data/train'
 
 # Training local  
-# labels_path_train = 'data/train/labels/labels.csv'
-# img_dir_train = 'data/train/images'
+labels_path_train = 'data/train/labels/labels.csv'
+img_dir_train = 'data/train/images'
 
-# Test 
-# labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
-# img_dir_test = '/groups/CS156b/data/test'
-
+# Testing local
 labels_path_test = 'data/test/ids.csv'
 img_dir_test = 'data/test/images'
 
-df_train = pd.read_csv(labels_path_train, delimiter='\t')[:-1]
-df_test = pd.read_csv(labels_path_test, delimiter='\t')[:-1]
+# Training HPC
+# labels_path_train = '/groups/CS156b/data/student_labels/train2023.csv'
+# img_dir_train = '/groups/CS156b/data/train'
+
+# Testing HPC
+# labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
+# img_dir_test = '/groups/CS156b/data/test'
+
+df_train = pd.read_csv(labels_path_train)[:-1]
+df_test = pd.read_csv(labels_path_test)[:-1]
 
 class CustomImageDataset(Dataset):
     def __init__(self, annotations_file, img_dir, transform=None, target_transform=None):
-        self.img_labels = pd.read_csv(annotations_file, delimiter='\t')[:-1]
+        self.img_labels = pd.read_csv(annotations_file)[:-1]
         self.img_dir = img_dir
         self.transform = transform
         self.target_transform = target_transform
@@ -74,10 +76,13 @@ transform = transforms.Compose([
 training_data = CustomImageDataset(labels_path_train, img_dir_train, transform=transform)
 test_data = CustomImageDataset(labels_path_test, img_dir_test, transform=transform)
 a, b = training_data[0]
-a, b
+print('first item', a, b)
 
 train_dataloader = DataLoader(training_data, batch_size=64, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True)
+for x, y in train_dataloader:
+    print(y)
+    break
 
 classes = ['No Finding', 'Enlarged Cardiomediastinum', 'Cardiomegaly', 'Lung Opacity', 'Pneumonia', 'Pleural Effusion', 'Pleural Other', 'Fracture', 'Support Devices']
 
