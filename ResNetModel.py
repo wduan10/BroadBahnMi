@@ -52,8 +52,8 @@ class CustomImageDataset(Dataset):
         img_path = '/'.join(img_path[1:])
         img_path = os.path.join(self.img_dir, img_path)
 
-        image = read_image(img_path)
-        # image = Image.open(img_path) # PIL image for applying transform for pre-trained ResNet model 
+        # image = read_image(img_path)
+        image = Image.open(img_path) # PIL image for applying transform for pre-trained ResNet model 
         image = Image.fromarray(np.stack((image,)*3, axis=-1)) # greyscale to RGB
         label = list(row[-9:]) # extract label, the last 9 columns
 
