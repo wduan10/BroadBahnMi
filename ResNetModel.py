@@ -16,22 +16,21 @@ from torch.utils.data import DataLoader
 import numpy as np
 from PIL import Image
 
-
 # Training local  
-labels_path_train = 'data/train/labels/labels.csv'
-img_dir_train = 'data/train/images'
+# labels_path_train = 'data/train/labels/labels.csv'
+# img_dir_train = 'data/train/images'
 
 # Testing local
-labels_path_test = 'data/test/ids.csv'
-img_dir_test = 'data/test/images'
+# labels_path_test = 'data/test/ids.csv'
+# img_dir_test = 'data/test/images'
 
 # Training HPC
-# labels_path_train = '/groups/CS156b/data/student_labels/train2023.csv'
-# img_dir_train = '/groups/CS156b/data/train'
+labels_path_train = '/groups/CS156b/data/student_labels/train2023.csv'
+img_dir_train = '/groups/CS156b/data/train'
 
 # Testing HPC
-# labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
-# img_dir_test = '/groups/CS156b/data/test'
+labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
+img_dir_test = '/groups/CS156b/data/test'
 
 df_train = pd.read_csv(labels_path_train)[:-1]
 df_test = pd.read_csv(labels_path_test)[:-1]
