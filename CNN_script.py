@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
 
 
 import os
@@ -23,7 +22,6 @@ import numpy as np
 from PIL import Image
 
 
-# In[89]:
 
 
 hpc = False
@@ -31,7 +29,6 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
-# In[86]:
 
 
 lr = 0.0002
@@ -41,7 +38,6 @@ device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs)
 
 
-# In[58]:
 
 
 if (hpc):
@@ -62,7 +58,6 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[59]:
 
 
 def parse_labels(df):
@@ -120,7 +115,6 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[64]:
 
 
 # Transform for ResNet 
@@ -143,7 +137,6 @@ val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[65]:
 
 
 # sample model with dropout = 0.1
@@ -171,7 +164,6 @@ criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[66]:
 
 
 # store metrics
@@ -217,7 +209,6 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[71]:
 
 
 # get predictions on test set
@@ -237,7 +228,6 @@ df_output = pd.DataFrame(rows_list, columns=['Id'] + list(df_train.columns[-9:])
 df_output.head()
 
 
-# In[83]:
 
 
 if (hpc):
@@ -254,7 +244,6 @@ full_path = os.path.join(output_dir, f'preds_{number}.csv')
 df_output.to_csv(full_path, index=False)
 
 
-# In[ ]:
 
 
 
