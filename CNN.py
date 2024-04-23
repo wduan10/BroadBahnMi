@@ -38,7 +38,7 @@ lr = 0.0002
 n_epochs = 30 if hpc else 5
 batch_size = 64
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
-print(device, n_epochs)
+print(hpc, device, n_epochs)
 
 
 # In[58]:
