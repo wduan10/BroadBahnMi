@@ -18,4 +18,4 @@ source /home/wduan/venvs/CS156b/bin/activate
 
 cd /central/groups/CS156b/2024/BroadBahnMi/
 
-python CNN.py
+python CNN.py hpc

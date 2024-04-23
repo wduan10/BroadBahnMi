@@ -23,10 +23,12 @@ import numpy as np
 from PIL import Image
 
 
-# In[84]:
+# In[88]:
 
 
 hpc = False
+if (sys.argv[1] == 'hpc'):
+    hpc = True
 
 
 # In[86]:

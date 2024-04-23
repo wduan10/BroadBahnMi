@@ -1,0 +1,3 @@
+jupyter nbconvert --to script 'CNN.ipynb'
+python -m pip install <package>        this is used to install packages in the virtual env
+source /home/wduan/venvs/CS156b/bin/activate
