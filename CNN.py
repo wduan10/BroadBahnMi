@@ -27,7 +27,7 @@ from PIL import Image
 
 
 hpc = False
-if (sys.argv[1] == 'hpc'):
+if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
