@@ -2,7 +2,7 @@
 # coding: utf-8
 
 
-
+print('Importing')
 import os
 import sys
 import torch
@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 import numpy as np
 from PIL import Image
-
+print('Done importing')
 
 
 
