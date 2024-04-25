@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=CNN
+#SBATCH --job-name=Testing
 #SBATCH --output=/central/groups/CS156b/2024/BroadBahnMi/%j.out
 #SBATCH --error=/central/groups/CS156b/2024/BroadBahnMi/%j.err
 #SBATCH -A CS156b
