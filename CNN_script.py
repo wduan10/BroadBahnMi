@@ -29,7 +29,7 @@ print(sys.argv)
 if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
-
+raise Exception('Test')
 
 
 lr = 0.0002
