@@ -163,8 +163,6 @@ criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-raise Exception('Test')
-
 # store metrics
 training_loss_history = np.zeros(n_epochs)
 validation_loss_history = np.zeros(n_epochs)
