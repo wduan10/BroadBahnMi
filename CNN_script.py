@@ -190,6 +190,7 @@ for epoch in range(n_epochs):
     
     training_loss_history[epoch] /= len(train_dataloader)
     print(f'Training Loss: {training_loss_history[epoch]:0.4f}')
+    raise Exception('Test break')
 
     # validate
     with torch.no_grad():
