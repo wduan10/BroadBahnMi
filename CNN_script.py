@@ -29,8 +29,6 @@ print(sys.argv)
 if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
-raise Exception('Test')
-
 
 lr = 0.0002
 n_epochs = 30 if hpc else 5
@@ -165,7 +163,7 @@ criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-
+raise Exception('Test')
 
 # store metrics
 training_loss_history = np.zeros(n_epochs)
