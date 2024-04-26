@@ -2,6 +2,7 @@
 # coding: utf-8
 
 
+
 print('Importing')
 import os
 import sys
@@ -24,14 +25,17 @@ print('Done importing')
 
 
 
+
 hpc = False
 print(sys.argv)
 if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
+
+
 lr = 0.0002
-n_epochs = 10 if hpc else 5
+n_epochs = 5 if hpc else 3
 batch_size = 64
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs)
@@ -119,7 +123,7 @@ class TestImageDataset(Dataset):
 # Transform for ResNet 
 transform = transforms.Compose([
     transforms.Lambda(lambda image: image.convert('RGB')),
-    transforms.Resize((512, 512)),
+    transforms.Resize((256, 256)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
 ])
@@ -146,14 +150,14 @@ model = nn.Sequential(
     nn.MaxPool2d(2),
     nn.Dropout(p=0.1),
 
-    nn.Conv2d(8, 8, kernel_size=(3, 3)),
-    nn.BatchNorm2d(num_features=8),
+    nn.Conv2d(8, 4, kernel_size=(3, 3)),
+    nn.BatchNorm2d(num_features=4),
     nn.ReLU(),
     nn.MaxPool2d(2),
     nn.Dropout(p=0.1),
 
     nn.Flatten(),
-    nn.Linear(126*126*8, 64),
+    nn.Linear(62*62*4, 64),
     nn.ReLU(),
     nn.Linear(64, 9),
     # PyTorch implementation of cross-entropy loss includes softmax layer
@@ -161,6 +165,8 @@ model = nn.Sequential(
 
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
+
+
 
 
 # store metrics
@@ -187,8 +193,6 @@ for epoch in range(n_epochs):
 
         # track training loss
         training_loss_history[epoch] += loss.item()
-        if (i > 1000):
-            raise Exception('1000 Iterations reached')
     
     training_loss_history[epoch] /= len(train_dataloader)
     print(f'Training Loss: {training_loss_history[epoch]:0.4f}')

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[90]:
 
 
+print('Importing')
 import os
 import sys
 import torch
@@ -21,27 +22,29 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 import numpy as np
 from PIL import Image
+print('Done importing')
 
 
-# In[89]:
+# In[91]:
 
 
 hpc = False
+print(sys.argv)
 if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
-# In[86]:
+# In[92]:
 
 
 lr = 0.0002
-n_epochs = 30 if hpc else 5
+n_epochs = 5 if hpc else 3
 batch_size = 64
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs)
 
 
-# In[58]:
+# In[93]:
 
 
 if (hpc):
@@ -62,7 +65,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[59]:
+# In[94]:
 
 
 def parse_labels(df):
@@ -120,13 +123,13 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[64]:
+# In[95]:
 
 
 # Transform for ResNet 
 transform = transforms.Compose([
     transforms.Lambda(lambda image: image.convert('RGB')),
-    transforms.Resize((512, 512)),
+    transforms.Resize((256, 256)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
 ])
@@ -143,7 +146,7 @@ val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[65]:
+# In[98]:
 
 
 # sample model with dropout = 0.1
@@ -154,14 +157,14 @@ model = nn.Sequential(
     nn.MaxPool2d(2),
     nn.Dropout(p=0.1),
 
-    nn.Conv2d(8, 8, kernel_size=(3, 3)),
-    nn.BatchNorm2d(num_features=8),
+    nn.Conv2d(8, 4, kernel_size=(3, 3)),
+    nn.BatchNorm2d(num_features=4),
     nn.ReLU(),
     nn.MaxPool2d(2),
     nn.Dropout(p=0.1),
 
     nn.Flatten(),
-    nn.Linear(126*126*8, 64),
+    nn.Linear(62*62*4, 64),
     nn.ReLU(),
     nn.Linear(64, 9),
     # PyTorch implementation of cross-entropy loss includes softmax layer
@@ -171,7 +174,7 @@ criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[66]:
+# In[99]:
 
 
 # store metrics
@@ -217,7 +220,7 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[71]:
+# In[100]:
 
 
 # get predictions on test set
@@ -237,7 +240,7 @@ df_output = pd.DataFrame(rows_list, columns=['Id'] + list(df_train.columns[-9:])
 df_output.head()
 
 
-# In[83]:
+# In[101]:
 
 
 if (hpc):
