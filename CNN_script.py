@@ -187,8 +187,8 @@ for epoch in range(n_epochs):
 
         # track training loss
         training_loss_history[epoch] += loss.item()
-        if (i > 100):
-            raise Exception('100 Iterations reached')
+        if (i > 1000):
+            raise Exception('1000 Iterations reached')
     
     training_loss_history[epoch] /= len(train_dataloader)
     print(f'Training Loss: {training_loss_history[epoch]:0.4f}')
