@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name=CNN-1000
-#SBATCH --output=/central/groups/CS156b/2024/BroadBahnMi/%j-1000.out
-#SBATCH --error=/central/groups/CS156b/2024/BroadBahnMi/%j-1000.err
+#SBATCH --job-name=CNN
+#SBATCH --output=/central/groups/CS156b/2024/BroadBahnMi/%j.out
+#SBATCH --error=/central/groups/CS156b/2024/BroadBahnMi/%j.err
 #SBATCH -A CS156b
 #SBATCH --time=4:00:00
 #SBATCH --ntasks=1
