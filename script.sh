@@ -9,7 +9,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8G
 #SBATCH --gres gpu:1
-#SBATCH --mail-user=wduan@caltech.edu
+#SBATCH --mail-user=oxu@caltech.edu
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
 #SBATCH --partition=gpu
@@ -18,4 +18,4 @@ source /home/oxu/my_venv/bin/activate
 
 cd /central/groups/CS156b/2024/BroadBahnMi/
 
-python ResNetModel.py
+python pathology_script.py
