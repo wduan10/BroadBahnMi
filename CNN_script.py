@@ -35,8 +35,8 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
 
 
 lr = 0.0002
-n_epochs = 5 if hpc else 3
-batch_size = 64
+n_epochs = 3
+batch_size = 256
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs)
 
