@@ -6,13 +6,13 @@ import numpy as np
 from matplotlib import pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
-from keras.models import Model
-from keras.utils import to_categorical
-from keras.preprocessing.image import ImageDataGenerator
-from keras.applications.vgg16 import VGG16, preprocess_input
+from tensorflow.keras.models import Model
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications.vgg16 import VGG16, preprocess_input
 from sklearn.model_selection import train_test_split
-from keras.callbacks import ModelCheckpoint, EarlyStopping
-from keras.layers import Dense, Dropout, Flatten
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.layers import Dense, Dropout, Flatten
 
 BATCH_SIZE = 64
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
