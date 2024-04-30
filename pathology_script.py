@@ -70,7 +70,7 @@ df['label'] = df['label'].astype(str)
 
 # Stratified train/test split based on 'Frontal/Lateral' column
 train_df, val_df = train_test_split(df,
-                                    test_size=0.2,
+                                    test_size=0.5,
                                     random_state=42)
 
 train_datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
