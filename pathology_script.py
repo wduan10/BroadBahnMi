@@ -159,6 +159,8 @@ model.evaluate(val_data)
 predictions = model.predict(test_data)
 columns = list(val_data.class_indices.keys()) 
 preds = pd.DataFrame(predictions, columns=columns)
+preds.head()
+
 
 if (hpc):
     output_dir = '/groups/CS156b/2024/BroadBahnMi/predictions'
@@ -170,5 +172,5 @@ for file in os.listdir(output_dir):
     if (file[:5] == 'preds'):
         number = max(number, int(file[6:-4]) + 1)
 
-full_path = os.path.join(output_dir, f'{pathology}_preds_{number}.csv')
+full_path = os.path.join(output_dir, f'preds_{number}.csv')
 preds.to_csv(full_path, index=False)
