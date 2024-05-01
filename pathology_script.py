@@ -1,4 +1,4 @@
-import os, sys
+import os
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
@@ -10,12 +10,21 @@ from keras import layers
 from sklearn.model_selection import train_test_split
 from keras.src.applications.vgg16 import VGG16, preprocess_input
 
-hpc = False
-print(sys.argv)
-if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
-    hpc = True
+BATCH_SIZE = 64
+NUM_EPOCHS = 5 
+LEARNING_RATE = 0.001 
+gpus = tf.config.list_physical_devices('GPU')
+print("Num GPUs Available: ", len(gpus))
+if gpus:
+  try:
+    tf.config.set_visible_devices(gpus[0], 'GPU')
+    logical_gpus = tf.config.list_logical_devices('GPU')
+    print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPU")
+  except RuntimeError as e:
+    # Visible devices must be set before GPUs have been initialized
+    print(e)
 
-if (hpc):
+if (len(gpus) != 0):
     labels_path_train = '/groups/CS156b/data/student_labels/train2023.csv'
     labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
     img_dir = '/groups/CS156b/data'
@@ -28,21 +37,6 @@ else:
 
     df_train = pd.read_csv(labels_path_train)
 
-BATCH_SIZE = 64
-NUM_EPOCHS = 5 
-print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
-
-gpus = tf.config.list_physical_devices('GPU')
-if gpus:
-  print()
-  try:
-    tf.config.set_visible_devices(gpus[0], 'GPU')
-    logical_gpus = tf.config.list_logical_devices('GPU')
-    print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPU")
-  except RuntimeError as e:
-    # Visible devices must be set before GPUs have been initialized
-    print(e)
-
 df_test = pd.read_csv(labels_path_test)
 print(df_train)
 print(df_test)
@@ -54,53 +48,56 @@ def parse_labels(df):
 classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
-df = pd.DataFrame()
-pathology = 'Fracture'
-df['filename'] = df_train['Path']
-df['label'] = df_train[pathology]
+# Prepare data for each Pathology 
+def get_pathology(pathology):
+    df = pd.DataFrame()
+    # pathology = 'Fracture'
+    df['filename'] = df_train['Path']
+    df['label'] = df_train[pathology]
 
-if (gpus):
-    df['label'] =  parse_labels(df['label'][:-1])
-else:
-    df['label'] = parse_labels(df['label'])
+    if (gpus):
+        df['label'] = parse_labels(df['label'][:-1])
+    else:
+        df['label'] = parse_labels(df['label'])
 
-# 'categorical' requires strings
-df['label'] = df['label'].astype(str)
+    # 'categorical' requires strings
+    df['label'] = df['label'].astype(str)
 
-# Stratified train/test split based on 'Frontal/Lateral' column
-train_df, val_df = train_test_split(df,
-                                    test_size=0.5,
-                                    random_state=42, 
-                                    stratify=df['label'])
+    # Stratified train/test split based on 'Frontal/Lateral' column
+    train_df, val_df = train_test_split(df,
+                                        test_size=0.5,
+                                        random_state=42, 
+                                        stratify=df['label'])
 
-train_datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
-                                   rescale=1./255, #Normalize
-                                   zoom_range=0.4,
-                                   horizontal_flip=True)
+    train_datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
+                                    rescale=1./255, #Normalize
+                                    zoom_range=0.4,
+                                    horizontal_flip=True)
 
-val_datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
-                                 rescale=1./255)
+    val_datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
+                                    rescale=1./255)
 
-# Apply the ImageDataGenerator to create image batches
-train_data = train_datagen.flow_from_dataframe(
-    dataframe=train_df,
-    directory=img_dir,
-    x_col='filename',
-    y_col='label',
-    class_mode='categorical',
-    batch_size=BATCH_SIZE,
-    target_size=(224, 224),
-)
+    # Apply the ImageDataGenerator to create image batches
+    train_data = train_datagen.flow_from_dataframe(
+        dataframe=train_df,
+        directory=img_dir,
+        x_col='filename',
+        y_col='label',
+        class_mode='categorical',
+        batch_size=BATCH_SIZE,
+        target_size=(224, 224),
+    )
 
-val_data = val_datagen.flow_from_dataframe(
-    dataframe=val_df,
-    directory=img_dir,
-    x_col='filename',
-    y_col='label',
-    class_mode='categorical',
-    batch_size=BATCH_SIZE,
-    target_size=(224, 224),
-)
+    val_data = val_datagen.flow_from_dataframe(
+        dataframe=val_df,
+        directory=img_dir,
+        x_col='filename',
+        y_col='label',
+        class_mode='categorical',
+        batch_size=BATCH_SIZE,
+        target_size=(224, 224),
+    )
+    return train_data, val_data
 
 # VGG16 Model
 conv_base = VGG16(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
@@ -114,7 +111,15 @@ top_layer = keras.layers.Dropout(0.2)(top_layer)
 output_layer = keras.layers.Dense(3, activation='softmax')(top_layer) # Predicting for one pathology 
 
 model = Model(inputs=conv_base.input, outputs=output_layer)
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
+# lr_schedule = keras.optimizers.schedules.ExponentialDecay(
+#     initial_learning_rate=1e-2,
+#     decay_steps=10000,
+#     decay_rate=0.9)
+# optimizer = keras.optimizers.SGD(learning_rate=lr_schedule)
+model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+
+train_data, val_data = get_pathology('Fracture')
 
 model.fit(
     train_data,
@@ -126,4 +131,7 @@ model.evaluate(val_data)
 
 # output 3 classes 
 predictions = model.predict(val_data)
-print(predictions) 
+for pred in predictions:
+    predicted_class_index = np.argmax(pred)  # Index of highest probability
+    predicted_class_name = list(val_data.class_indices.keys())[predicted_class_index]
+    print(predicted_class_name) 
