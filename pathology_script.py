@@ -124,4 +124,5 @@ model.fit(
 
 model.evaluate(val_data)
 
-model.predict(val_data)
+predictions = model.predict(val_data)
+print(predictions) 
