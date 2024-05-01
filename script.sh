@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --job-name=Test
-#SBATCH --output=/home/oxu/BroadBahnMi/%j.out
-#SBATCH --error=/home/oxu/BroadBahnMi/%j.err
+#SBATCH --output=/home/oxu/BroadBahnMi/out/%j.out
+#SBATCH --error=/home/oxu/BroadBahnMi/out/%j.err
 #SBATCH -A CS156b
 #SBATCH --time=2:00:00
 #SBATCH --ntasks=1
