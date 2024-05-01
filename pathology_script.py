@@ -60,10 +60,9 @@ df['filename'] = df_train['Path']
 df['label'] = df_train[pathology]
 
 if (gpus):
-    df['label'] = df['label'][:-1]
-
-# remove Nan values
-df = df.dropna()
+    df['label'] =  parse_labels(df['label'][:-1])
+else:
+    df['label'] = parse_labels(df['label'])
 
 # 'categorical' requires strings
 df['label'] = df['label'].astype(str)
@@ -71,7 +70,8 @@ df['label'] = df['label'].astype(str)
 # Stratified train/test split based on 'Frontal/Lateral' column
 train_df, val_df = train_test_split(df,
                                     test_size=0.5,
-                                    random_state=42)
+                                    random_state=42, 
+                                    stratify=df['label'])
 
 train_datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
                                    rescale=1./255, #Normalize
@@ -111,10 +111,10 @@ top_layer = keras.layers.GlobalAveragePooling2D()(top_layer)
 top_layer = keras.layers.Dense(4096, activation='relu')(top_layer)
 top_layer = keras.layers.Dense(1072, activation='relu')(top_layer)
 top_layer = keras.layers.Dropout(0.2)(top_layer)
-output_layer = keras.layers.Dense(2, activation='sigmoid')(top_layer) # Predicting for one pathology
+output_layer = keras.layers.Dense(3, activation='softmax')(top_layer) # Predicting for one pathology 
 
 model = Model(inputs=conv_base.input, outputs=output_layer)
-model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 model.fit(
     train_data,
@@ -124,5 +124,6 @@ model.fit(
 
 model.evaluate(val_data)
 
+# output 3 classes 
 predictions = model.predict(val_data)
 print(predictions) 
