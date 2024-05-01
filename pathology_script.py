@@ -82,7 +82,7 @@ val_datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
                                  rescale=1./255)
 
 # Apply the ImageDataGenerator to create image batches
-train_generator = train_datagen.flow_from_dataframe(
+train_data = train_datagen.flow_from_dataframe(
     dataframe=train_df,
     directory=img_dir,
     x_col='filename',
@@ -92,7 +92,7 @@ train_generator = train_datagen.flow_from_dataframe(
     target_size=(224, 224),
 )
 
-val_generator = val_datagen.flow_from_dataframe(
+val_data = val_datagen.flow_from_dataframe(
     dataframe=val_df,
     directory=img_dir,
     x_col='filename',
@@ -117,9 +117,11 @@ model = Model(inputs=conv_base.input, outputs=output_layer)
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 model.fit(
-    train_generator,
+    train_data,
     epochs=NUM_EPOCHS,
-    validation_data=val_generator,
+    validation_data=val_data,
     verbose=1)
 
-model.evaluate(val_generator)
+model.evaluate(val_data)
+
+model.predict(val_data)
