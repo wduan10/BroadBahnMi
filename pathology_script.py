@@ -1,4 +1,4 @@
-import os
+import os, sys
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
@@ -9,8 +9,24 @@ from keras import Model
 from keras import layers 
 from sklearn.model_selection import train_test_split
 from keras.src.applications.vgg16 import VGG16, preprocess_input
-from tensorflow.python.keras.models import Sequential 
-from tensorflow.python.keras.layers import Dense, Conv2D, MaxPool2D , Flatten, GlobalAveragePooling2D, Dropout
+
+hpc = False
+print(sys.argv)
+if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
+    hpc = True
+
+if (hpc):
+    labels_path_train = '/groups/CS156b/data/student_labels/train2023.csv'
+    labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
+    img_dir = '/groups/CS156b/data'
+
+    df_train = pd.read_csv(labels_path_train)[:-1]
+else:
+    labels_path_train = 'data/train/labels/labels.csv'
+    labels_path_test = 'data/test/ids.csv'
+    img_dir = 'data'
+
+    df_train = pd.read_csv(labels_path_train)
 
 BATCH_SIZE = 64
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
@@ -25,20 +41,6 @@ if gpus:
   except RuntimeError as e:
     # Visible devices must be set before GPUs have been initialized
     print(e)
-
-if (gpus):
-    labels_path_train = '/groups/CS156b/data/student_labels/train2023.csv'
-    labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
-    img_dir = '/groups/CS156b/data'
-
-    df_train = pd.read_csv(labels_path_train)[:-1]
-else:
-    # google colab
-    labels_path_train = 'data/train/labels/labels.csv'
-    labels_path_test = 'data/test/ids.csv'
-    img_dir = 'data'
-
-    df_train = pd.read_csv(labels_path_train)
 
 df_test = pd.read_csv(labels_path_test)
 print(df_train)
@@ -58,7 +60,6 @@ df['label'] = df_train[pathology]
 
 if (gpus):
     df['label'] = df['label'][:-1]
-
 
 # remove Nan values
 df = df.dropna()
@@ -106,11 +107,11 @@ conv_base = VGG16(include_top=False, weights='imagenet', input_shape=(224, 224, 
 
 # Customize top layer
 top_layer = conv_base.output
-top_layer = GlobalAveragePooling2D()(top_layer)
-top_layer = Dense(4096, activation='relu')(top_layer)
-top_layer = Dense(1072, activation='relu')(top_layer)
-top_layer = Dropout(0.2)(top_layer)
-output_layer = Dense(3, activation='softmax')(top_layer) # Predicting for one pathology
+top_layer = keras.layers.GlobalAveragePooling2D()(top_layer)
+top_layer = keras.layers.Dense(4096, activation='relu')(top_layer)
+top_layer = keras.layers.Dense(1072, activation='relu')(top_layer)
+top_layer = keras.layers.Dropout(0.2)(top_layer)
+output_layer = keras.layers.Dense(2, activation='softmax')(top_layer) # Predicting for one pathology
 
 model = Model(inputs=conv_base.input, outputs=output_layer)
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
