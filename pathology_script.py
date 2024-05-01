@@ -10,6 +10,7 @@ from keras import Model
 from keras import layers 
 from sklearn.model_selection import train_test_split
 from keras.src.applications.vgg16 import VGG16, preprocess_input
+from tensorflow.python.compiler.tensorrt import trt_convert as trt
 
 BATCH_SIZE = 64
 NUM_EPOCHS = 5 
