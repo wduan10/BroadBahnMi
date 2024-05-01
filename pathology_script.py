@@ -10,7 +10,6 @@ from keras import Model
 from keras import layers 
 from sklearn.model_selection import train_test_split
 from keras.src.applications.vgg16 import VGG16, preprocess_input
-from tensorflow.python.compiler.tensorrt import trt_convert as trt
 
 BATCH_SIZE = 64
 NUM_EPOCHS = 5 
@@ -101,10 +100,13 @@ def get_pathology(pathology):
     return train_data, val_data
 
 # Handling test data 
+test_df = pd.DataFrame()
+test_df['filename'] = df_test['Path']
+
 test_datagen = ImageDataGenerator(rescale=1./255)
 
 test_data = test_datagen.flow_from_dataframe(
-    dataframe=df_test,   
+    dataframe=test_df,   
     directory=img_dir,
     x_col='filename',
     class_mode=None,   
