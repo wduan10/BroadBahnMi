@@ -76,8 +76,7 @@ def get_pathology(pathology):
                                     zoom_range=0.4,
                                     horizontal_flip=True)
 
-    val_datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
-                                    rescale=1./255)
+    val_datagen = ImageDataGenerator(rescale=1./255)
 
     # Apply the ImageDataGenerator to create image batches
     train_data = train_datagen.flow_from_dataframe(
@@ -100,6 +99,19 @@ def get_pathology(pathology):
         target_size=(224, 224),
     )
     return train_data, val_data
+
+# Handling test data 
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+test_data = test_datagen.flow_from_dataframe(
+    dataframe=df_test,   
+    directory=img_dir,
+    x_col='filename',
+    class_mode=None,   
+    batch_size=BATCH_SIZE,
+    target_size=(224, 224),
+    shuffle=False  
+)
 
 # VGG16 Model
 conv_base = VGG16(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
@@ -132,7 +144,7 @@ model.fit(
 model.evaluate(val_data)
 
 # Dataframe of predictions for 3 classes 
-predictions = model.predict(val_data)
+predictions = model.predict(test_data)
 columns = list(val_data.class_indices.keys()) 
 preds = pd.DataFrame(predictions, columns=columns)
 display(preds)
