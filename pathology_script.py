@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from IPython.display import display
 import numpy as np
 from matplotlib import pyplot as plt
 import tensorflow as tf
@@ -129,9 +130,8 @@ model.fit(
 
 model.evaluate(val_data)
 
-# output 3 classes 
+# Dataframe of predictions for 3 classes 
 predictions = model.predict(val_data)
-for pred in predictions:
-    predicted_class_index = np.argmax(pred)  # Index of highest probability
-    predicted_class_name = list(val_data.class_indices.keys())[predicted_class_index]
-    print(predicted_class_name) 
+columns = list(val_data.class_indices.keys()) 
+preds = pd.DataFrame(predictions, columns=columns)
+display(preds)
