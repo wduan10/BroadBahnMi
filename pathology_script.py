@@ -1,4 +1,4 @@
-import os
+import os, sys
 import pandas as pd
 from IPython.display import display
 import numpy as np
@@ -12,31 +12,38 @@ from sklearn.model_selection import train_test_split
 from keras.src.applications.vgg16 import VGG16, preprocess_input
 
 BATCH_SIZE = 64
-NUM_EPOCHS = 5 
-LEARNING_RATE = 0.001 
-gpus = tf.config.list_physical_devices('GPU')
-print("Num GPUs Available: ", len(gpus))
-if gpus:
-  try:
-    tf.config.set_visible_devices(gpus[0], 'GPU')
-    logical_gpus = tf.config.list_logical_devices('GPU')
-    print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPU")
-  except RuntimeError as e:
-    # Visible devices must be set before GPUs have been initialized
-    print(e)
+NUM_EPOCHS = 10 
+LEARNING_RATE = 0.0001
 
-if (len(gpus) != 0):
+hpc = False
+print(sys.argv)
+if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
+    hpc = True
+
+if (hpc):
     labels_path_train = '/groups/CS156b/data/student_labels/train2023.csv'
     labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
     img_dir = '/groups/CS156b/data'
 
     df_train = pd.read_csv(labels_path_train)[:-1]
+    gpus = tf.config.list_physical_devices('GPU')
+    print("Num GPUs Available: ", len(gpus))
+    if gpus:
+        try:
+            tf.config.set_visible_devices(gpus[0], 'GPU')
+            logical_gpus = tf.config.list_logical_devices('GPU')
+            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPU")
+        except RuntimeError as e:
+            print(e)
+
+    TEST_SIZE = 0.2 
 else:
     labels_path_train = 'data/train/labels/labels.csv'
     labels_path_test = 'data/test/ids.csv'
     img_dir = 'data'
 
     df_train = pd.read_csv(labels_path_train)
+    TEST_SIZE = 0.5 
 
 df_test = pd.read_csv(labels_path_test)
 print(df_train)
@@ -66,7 +73,7 @@ def get_pathology(pathology):
 
     # Stratified train/test split based on 'Frontal/Lateral' column
     train_df, val_df = train_test_split(df,
-                                        test_size=0.5,
+                                        test_size=TEST_SIZE,
                                         random_state=42, 
                                         stratify=df['label'])
 
@@ -117,7 +124,6 @@ test_data = test_datagen.flow_from_dataframe(
 
 # VGG16 Model
 conv_base = VGG16(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
-
 # Customize top layer
 top_layer = conv_base.output
 top_layer = keras.layers.GlobalAveragePooling2D()(top_layer)
@@ -127,15 +133,18 @@ top_layer = keras.layers.Dropout(0.2)(top_layer)
 output_layer = keras.layers.Dense(3, activation='softmax')(top_layer) # Predicting for one pathology 
 
 model = Model(inputs=conv_base.input, outputs=output_layer)
-optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
-# lr_schedule = keras.optimizers.schedules.ExponentialDecay(
-#     initial_learning_rate=1e-2,
-#     decay_steps=10000,
-#     decay_rate=0.9)
-# optimizer = keras.optimizers.SGD(learning_rate=lr_schedule)
+# optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
+
+lr_schedule = keras.optimizers.schedules.ExponentialDecay(
+    initial_learning_rate=LEARNING_RATE,
+    decay_steps=10000,
+    decay_rate=0.9)
+optimizer = keras.optimizers.SGD(learning_rate=lr_schedule)
+
 model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
-train_data, val_data = get_pathology('Fracture')
+pathology = 'Fracture'
+train_data, val_data = get_pathology(pathology)
 
 model.fit(
     train_data,
@@ -160,5 +169,5 @@ for file in os.listdir(output_dir):
     if (file[:5] == 'preds'):
         number = max(number, int(file[6:-4]) + 1)
 
-full_path = os.path.join(output_dir, f'preds_{number}.csv')
+full_path = os.path.join(output_dir, f'{pathology}_preds_{number}.csv')
 preds.to_csv(full_path, index=False)

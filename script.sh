@@ -4,7 +4,7 @@
 #SBATCH --output=/home/oxu/BroadBahnMi/%j.out
 #SBATCH --error=/home/oxu/BroadBahnMi/%j.err
 #SBATCH -A CS156b
-#SBATCH --time=1:30:00
+#SBATCH --time=2:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8G
