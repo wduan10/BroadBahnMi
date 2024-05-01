@@ -10,7 +10,7 @@ from keras import layers
 from sklearn.model_selection import train_test_split
 from keras.src.applications.vgg16 import VGG16, preprocess_input
 from tensorflow.python.keras.models import Sequential 
-from tensorflow.python.keras.layers import Dense, Conv2D, MaxPool2D , Flatten, GlobalAveragePooling2D
+from tensorflow.python.keras.layers import Dense, Conv2D, MaxPool2D , Flatten, GlobalAveragePooling2D, Dropout
 
 BATCH_SIZE = 64
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
@@ -106,7 +106,7 @@ conv_base = VGG16(include_top=False, weights='imagenet', input_shape=(224, 224, 
 
 # Customize top layer
 top_layer = conv_base.output
-top_layer = tf.keras.layers.GlobalAveragePooling2D()(top_layer)
+top_layer = GlobalAveragePooling2D()(top_layer)
 top_layer = Dense(4096, activation='relu')(top_layer)
 top_layer = Dense(1072, activation='relu')(top_layer)
 top_layer = Dropout(0.2)(top_layer)
