@@ -1,4 +1,4 @@
-import os
+import os, sys 
 import pandas as pd
 from IPython.display import display
 import numpy as np
@@ -15,6 +15,11 @@ BATCH_SIZE = 64
 NUM_EPOCHS = 10 
 LEARNING_RATE = 0.0001
 
+hpc = False
+print(sys.argv)
+if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
+    hpc = True
+
 gpus = tf.config.list_physical_devices('GPU')
 print("Num GPUs Available: ", len(gpus))
 if gpus:
@@ -25,7 +30,7 @@ if gpus:
     except RuntimeError as e:
         print(e)
 
-if (gpus):
+if (hpc):
     labels_path_train = '/groups/CS156b/data/student_labels/train2023.csv'
     labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
     img_dir = '/groups/CS156b/data'
@@ -155,7 +160,7 @@ predictions = model.predict(test_data)
 columns = list(val_data.class_indices.keys()) 
 preds = pd.DataFrame(predictions, columns=columns)
 
-if (gpus):
+if (hpc):
     output_dir = '/groups/CS156b/2024/BroadBahnMi/predictions'
 else:
     output_dir = 'predictions'
