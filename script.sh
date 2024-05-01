@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --job-name=Test
-#SBATCH --output=/central/groups/CS156b/2024/BroadBahnMi/%j.out
-#SBATCH --error=/central/groups/CS156b/2024/BroadBahnMi/%j.err
+#SBATCH --output=/home/oxu/BroadBahnMi/%j.out
+#SBATCH --error=/home/oxu/BroadBahnMi/%j.err
 #SBATCH -A CS156b
 #SBATCH --time=1:30:00
 #SBATCH --ntasks=1
@@ -16,6 +16,6 @@
 
 source /home/oxu/my_venv/bin/activate
 
-cd /central/groups/CS156b/2024/BroadBahnMi/
+cd /home/oxu/BroadBahnMi
 
 python pathology_script.py
