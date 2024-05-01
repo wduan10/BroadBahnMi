@@ -111,7 +111,7 @@ top_layer = keras.layers.GlobalAveragePooling2D()(top_layer)
 top_layer = keras.layers.Dense(4096, activation='relu')(top_layer)
 top_layer = keras.layers.Dense(1072, activation='relu')(top_layer)
 top_layer = keras.layers.Dropout(0.2)(top_layer)
-output_layer = keras.layers.Dense(2, activation='softmax')(top_layer) # Predicting for one pathology
+output_layer = keras.layers.Dense(2, activation='sigmoid')(top_layer) # Predicting for one pathology
 
 model = Model(inputs=conv_base.input, outputs=output_layer)
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
