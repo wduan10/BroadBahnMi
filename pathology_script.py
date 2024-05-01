@@ -33,7 +33,7 @@ print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
 gpus = tf.config.list_physical_devices('GPU')
 if gpus:
-  # Restrict TensorFlow to only use the first GPU
+  print()
   try:
     tf.config.set_visible_devices(gpus[0], 'GPU')
     logical_gpus = tf.config.list_logical_devices('GPU')
@@ -102,7 +102,6 @@ val_generator = val_datagen.flow_from_dataframe(
 )
 
 # VGG16 Model
-
 conv_base = VGG16(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
 
 # Customize top layer
