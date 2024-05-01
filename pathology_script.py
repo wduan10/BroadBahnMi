@@ -1,18 +1,17 @@
-
 import os
 import torch
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras.models import Model
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications.vgg16 import VGG16, preprocess_input
+import keras 
+from keras.src.legacy.preprocessing.image import ImageDataGenerator
+from keras import Model
+from keras import layers 
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
-from tensorflow.keras.layers import Dense, Dropout, Flatten
+from keras.src.applications.vgg16 import VGG16, preprocess_input
+from tensorflow.python.keras.models import Sequential 
+from tensorflow.python.keras.layers import Dense, Conv2D, MaxPool2D , Flatten, GlobalAveragePooling2D
 
 BATCH_SIZE = 64
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
@@ -36,15 +35,15 @@ if (gpus):
     df_train = pd.read_csv(labels_path_train)[:-1]
 else:
     # google colab
-    labels_path_train = '/content/BroadBahnMi/data/train/labels/labels.csv'
-    labels_path_test = '/content/BroadBahnMi/data/test/ids.csv'
-    img_dir = '/content/BroadBahnMi/data'
+    labels_path_train = 'data/train/labels/labels.csv'
+    labels_path_test = 'data/test/ids.csv'
+    img_dir = 'data'
 
     df_train = pd.read_csv(labels_path_train)
 
 df_test = pd.read_csv(labels_path_test)
-display(df_train)
-display(df_test)
+print(df_train)
+print(df_test)
 
 def parse_labels(df):
     df.fillna(0, inplace=True)
