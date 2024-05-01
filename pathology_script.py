@@ -29,6 +29,7 @@ else:
     df_train = pd.read_csv(labels_path_train)
 
 BATCH_SIZE = 64
+NUM_EPOCHS = 5 
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
 gpus = tf.config.list_physical_devices('GPU')
@@ -117,7 +118,7 @@ model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy']
 
 model.fit(
     train_generator,
-    epochs=1,
+    epochs=NUM_EPOCHS,
     validation_data=val_generator,
     verbose=1)
 
