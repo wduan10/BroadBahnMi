@@ -159,7 +159,7 @@ predictions = model.predict(test_data)
 columns = list(val_data.class_indices.keys()) 
 preds = pd.DataFrame(predictions, columns=columns)
 
-if (len(gpus) != 0):
+if (hpc):
     output_dir = '/groups/CS156b/2024/BroadBahnMi/predictions'
 else:
     output_dir = 'predictions'
