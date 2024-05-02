@@ -1,4 +1,4 @@
-import os, sys 
+import os 
 import datetime 
 import pandas as pd
 from IPython.display import display
@@ -15,11 +15,7 @@ from keras.src.applications.vgg16 import VGG16, preprocess_input
 BATCH_SIZE = 64
 NUM_EPOCHS = 15  
 LEARNING_RATE = 0.0001
-
-hpc = False
-print(sys.argv)
-if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
-    hpc = True
+HPC = True 
 
 gpus = tf.config.list_physical_devices('GPU')
 print("Num GPUs Available: ", len(gpus))
@@ -31,7 +27,7 @@ if gpus:
     except RuntimeError as e:
         print(e)
 
-if (hpc):
+if (HPC):
     labels_path_train = '/groups/CS156b/data/student_labels/train2023.csv'
     labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
     img_dir = '/groups/CS156b/data'
