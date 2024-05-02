@@ -1,4 +1,5 @@
 import os, sys 
+import datetime 
 import pandas as pd
 from IPython.display import display
 import numpy as np
@@ -159,18 +160,11 @@ model.evaluate(val_data)
 predictions = model.predict(test_data)
 columns = list(val_data.class_indices.keys()) 
 preds = pd.DataFrame(predictions, columns=columns)
-preds.head()
 
-
-if (hpc):
-    output_dir = '/groups/CS156b/2024/BroadBahnMi/predictions'
-else:
-    output_dir = 'predictions'
-
-number = 1
-for file in os.listdir(output_dir):
-    if (file[:5] == 'preds'):
-        number = max(number, int(file[6:-4]) + 1)
-
-full_path = os.path.join(output_dir, f'preds_{number}.csv')
+output_dir = 'predictions'   
+now = datetime.datetime.now()
+timestamp_str = now.strftime("%Y-%m-%d_%H-%M-%S")
+filename = f"preds_{timestamp_str}.csv" 
+os.makedirs(output_dir, exist_ok=True)
+full_path = os.path.join(output_dir, filename) 
 preds.to_csv(full_path, index=False)
