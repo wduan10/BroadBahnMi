@@ -51,9 +51,6 @@ def parse_labels(df):
     df.fillna(0, inplace=True)
     return df
 
-classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
-           "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
-
 # Prepare data for each Pathology 
 def get_pathology(pathology):
     df = pd.DataFrame()
@@ -120,6 +117,12 @@ test_data = test_datagen.flow_from_dataframe(
     shuffle=False  
 )
 
+classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
+           "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
+
+pathology = 'No Finding'
+train_data, val_data = get_pathology(pathology)
+
 # VGG16 Model
 conv_base = VGG16(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
 # Customize top layer
@@ -131,8 +134,10 @@ top_layer = keras.layers.Dropout(0.2)(top_layer)
 output_layer = keras.layers.Dense(3, activation='softmax')(top_layer) # Predicting for one pathology 
 
 model = Model(inputs=conv_base.input, outputs=output_layer)
+
 # optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 
+# For lower num_epochs 
 lr_schedule = keras.optimizers.schedules.ExponentialDecay(
     initial_learning_rate=LEARNING_RATE,
     decay_steps=10000,
@@ -140,9 +145,6 @@ lr_schedule = keras.optimizers.schedules.ExponentialDecay(
 optimizer = keras.optimizers.SGD(learning_rate=lr_schedule)
 
 model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
-
-pathology = 'Fracture'
-train_data, val_data = get_pathology(pathology)
 
 model.fit(
     train_data,
