@@ -120,7 +120,7 @@ test_data = test_datagen.flow_from_dataframe(
 classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
-pathology = 'No Finding'
+pathology = "Enlarged Cardiomediastinum"
 train_data, val_data = get_pathology(pathology)
 
 # VGG16 Model
@@ -161,8 +161,8 @@ preds = pd.DataFrame(predictions, columns=columns)
 
 output_dir = 'predictions'   
 now = datetime.datetime.now()
-timestamp_str = now.strftime("%Y-%m-%d_%H-%M-%S")
-filename = f"preds_{timestamp_str}.csv" 
+timestamp_str = now.strftime("%m-%d_%H-%M")
+filename = f"{pathology}_preds_{timestamp_str}.csv" 
 os.makedirs(output_dir, exist_ok=True)
 full_path = os.path.join(output_dir, filename) 
-preds.to_csv(full_path, index=False)
+preds.to_csv(full_path, index=False) 
