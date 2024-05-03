@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 from keras.src.applications.vgg16 import VGG16, preprocess_input
 
 BATCH_SIZE = 256 
-NUM_EPOCHS = 5 
+NUM_EPOCHS = 10 
 LEARNING_RATE = 0.0002 
 HPC = True 
 
@@ -120,7 +120,7 @@ test_data = test_datagen.flow_from_dataframe(
 classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
-pathology = "No Finding"
+pathology = "Enlarged Cardiomediastinum"
 train_data, val_data = get_pathology(pathology)
 
 # VGG16 Model
