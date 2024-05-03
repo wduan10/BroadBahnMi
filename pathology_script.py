@@ -12,9 +12,9 @@ from keras import layers
 from sklearn.model_selection import train_test_split
 from keras.src.applications.vgg16 import VGG16, preprocess_input
 
-BATCH_SIZE = 128
-NUM_EPOCHS = 5
-LEARNING_RATE = 0.001
+BATCH_SIZE = 256 
+NUM_EPOCHS = 5 
+LEARNING_RATE = 0.0002 
 HPC = True 
 
 gpus = tf.config.list_physical_devices('GPU')
@@ -120,7 +120,7 @@ test_data = test_datagen.flow_from_dataframe(
 classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
-pathology = "Lung Opacity"
+pathology = "No Finding"
 train_data, val_data = get_pathology(pathology)
 
 # VGG16 Model
@@ -135,14 +135,14 @@ output_layer = keras.layers.Dense(3, activation='softmax')(top_layer) # Predicti
 
 model = Model(inputs=conv_base.input, outputs=output_layer)
 
-# optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
+optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 
 # For lower num_epochs 
-lr_schedule = keras.optimizers.schedules.ExponentialDecay(
-    initial_learning_rate=LEARNING_RATE,
-    decay_steps=10000,
-    decay_rate=0.9)
-optimizer = keras.optimizers.SGD(learning_rate=lr_schedule)
+# lr_schedule = keras.optimizers.schedules.ExponentialDecay(
+#     initial_learning_rate=LEARNING_RATE,
+#     decay_steps=10000,
+#     decay_rate=0.9)
+# optimizer = keras.optimizers.SGD(learning_rate=lr_schedule)
 
 model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
