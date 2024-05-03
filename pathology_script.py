@@ -120,7 +120,7 @@ test_data = test_datagen.flow_from_dataframe(
 classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
-pathology = "Lung Opacity"
+pathology = "Pneumonia"
 train_data, val_data = get_pathology(pathology)
 
 # VGG16 Model
