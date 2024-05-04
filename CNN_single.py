@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[6]:
 
 
 print('Importing')
@@ -21,17 +21,18 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 import numpy as np
+from ResNet import ResNet50
 from PIL import Image
 print('Done importing')
 
 
-# In[39]:
+# In[7]:
 
 
 pathology = 'Enlarged Cardiomediastinum'
 
 
-# In[40]:
+# In[8]:
 
 
 hpc = False
@@ -40,7 +41,7 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
-# In[41]:
+# In[9]:
 
 
 lr = 0.0002
@@ -50,7 +51,7 @@ device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs)
 
 
-# In[42]:
+# In[10]:
 
 
 if (hpc):
@@ -73,7 +74,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[43]:
+# In[11]:
 
 
 def parse_labels(df):
@@ -133,7 +134,7 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[44]:
+# In[12]:
 
 
 transform = transforms.Compose([
@@ -155,9 +156,10 @@ val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[45]:
+# In[17]:
 
 
+'''
 # sample model with dropout = 0.1
 model = nn.Sequential(
     nn.Conv2d(3, 8, kernel_size=(3, 3)),
@@ -178,12 +180,16 @@ model = nn.Sequential(
     nn.Linear(64, 3),
     # PyTorch implementation of cross-entropy loss includes softmax layer
 ).to(device)
+'''
+
+model = ResNet50(3).to(device)
+
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[46]:
+# In[18]:
 
 
 # store metrics
@@ -229,7 +235,7 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[48]:
+# In[23]:
 
 
 # get predictions on test set
@@ -241,7 +247,7 @@ with torch.no_grad():
         images, ids = images.to(device), ids.to(device)
         
         output = np.array(model(images).cpu())
-        output = np.mean(output, axis=1)
+        output = np.argmax(output, axis=1) - 1
         for preds, id in zip(output, ids):
             rows_list.append([int(id)] + [preds])
 
