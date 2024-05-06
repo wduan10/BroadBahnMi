@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 from keras.src.applications.vgg16 import VGG16, preprocess_input
 
 BATCH_SIZE = 256 
-NUM_EPOCHS = 10  
+NUM_EPOCHS = 1 
 LEARNING_RATE = 0.0002 
 HPC = True 
 
@@ -58,7 +58,7 @@ def get_pathology(pathology):
     df['filename'] = df_train['Path']
     df['label'] = df_train[pathology]
 
-    if (gpus):
+    if (HPC):
         df['label'] = parse_labels(df['label'][:-1])
     else:
         df['label'] = parse_labels(df['label'])
@@ -72,9 +72,12 @@ def get_pathology(pathology):
                                         random_state=42, 
                                         stratify=df['label'])
 
-    train_datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
-                                    rescale=1./255, #Normalize
-                                    zoom_range=0.4,
+    # train_datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
+    #                                 rescale=1./255, #Normalize
+    #                                 zoom_range=0.4,
+    #                                 horizontal_flip=True)
+    train_datagen = ImageDataGenerator(rescale=1./255, #Normalize
+                                    zoom_range=0.1,
                                     horizontal_flip=True)
 
     val_datagen = ImageDataGenerator(rescale=1./255)
@@ -120,7 +123,7 @@ test_data = test_datagen.flow_from_dataframe(
 classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
-pathology = "Support Devices"
+pathology = "Fracture"
 train_data, val_data = get_pathology(pathology)
 
 # VGG16 Model
@@ -128,8 +131,8 @@ conv_base = VGG16(include_top=False, weights='imagenet', input_shape=(224, 224, 
 # Customize top layer
 top_layer = conv_base.output
 top_layer = keras.layers.GlobalAveragePooling2D()(top_layer)
-top_layer = keras.layers.Dense(4096, activation='relu')(top_layer)
-top_layer = keras.layers.Dense(1072, activation='relu')(top_layer)
+top_layer = keras.layers.Dense(512, activation='relu')(top_layer)   
+top_layer = keras.layers.Dense(128, activation='relu')(top_layer)   
 top_layer = keras.layers.Dropout(0.2)(top_layer)
 output_layer = keras.layers.Dense(3, activation='softmax')(top_layer) # Predicting for one pathology 
 
@@ -146,13 +149,16 @@ optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 
 model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
-model.fit(
+history = model.fit(
     train_data,
     epochs=NUM_EPOCHS,
     validation_data=val_data,
     verbose=1)
 
-model.evaluate(val_data)
+training_loss = history.history['loss']
+validation_loss = history.history['val_loss']
+for i in range(NUM_EPOCHS):
+    print(f"Epoch {i+1}: Training Loss = {training_loss[i]:.4f}, Validation Loss = {validation_loss[i]:.4f}")
 
 # Dataframe of predictions for 3 classes 
 predictions = model.predict(test_data)
