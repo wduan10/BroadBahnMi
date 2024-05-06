@@ -1,4 +1,4 @@
-jupyter nbconvert --to script 'CNN.ipynb'
+jupyter nbconvert --to script 'CNN_single.ipynb'
 python -m pip install <package>        this is used to install packages in the virtual env
 source /home/wduan/venvs/CS156b/bin/activate
 ipython kernel install --name "local-venv-kernel" --user            this is used within hpc interactive desktop host in order to setup local env for jupyter nb
