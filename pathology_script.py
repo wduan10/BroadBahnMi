@@ -54,7 +54,6 @@ def parse_labels(df):
 # Prepare data for each Pathology 
 def get_pathology(pathology):
     df = pd.DataFrame()
-    # pathology = 'Fracture'
     df['filename'] = df_train['Path']
     df['label'] = df_train[pathology]
 
@@ -69,8 +68,7 @@ def get_pathology(pathology):
     # Stratified train/test split based on 'Frontal/Lateral' column
     train_df, val_df = train_test_split(df,
                                         test_size=TEST_SIZE,
-                                        random_state=42, 
-                                        stratify=df['label'])
+                                        random_state=42)
 
     # train_datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
     #                                 rescale=1./255, #Normalize
