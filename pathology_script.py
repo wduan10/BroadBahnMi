@@ -12,7 +12,7 @@ from keras import layers
 from sklearn.model_selection import train_test_split
 from keras.src.applications.vgg16 import VGG16, preprocess_input
 
-BATCH_SIZE = 256 
+BATCH_SIZE = 64 
 NUM_EPOCHS = 1 
 LEARNING_RATE = 0.0002 
 HPC = True 
