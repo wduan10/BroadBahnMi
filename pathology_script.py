@@ -73,8 +73,7 @@ def get_pathology(pathology):
                                         test_size=TEST_SIZE,
                                         random_state=42)
 
-    train_datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
-                                    rescale=1./255, #Normalize
+    train_datagen = ImageDataGenerator(rescale=1./255, #Normalize
                                     zoom_range=0.1,
                                     horizontal_flip=True)
     # train_datagen = ImageDataGenerator(rescale=1./255, #Normalize
@@ -108,7 +107,6 @@ def get_pathology(pathology):
 # Handling test data 
 test_df = pd.DataFrame()
 test_df['filename'] = df_test['Path']
-display(test_df.head())
 
 test_datagen = ImageDataGenerator(rescale=1./255)
 
@@ -127,8 +125,6 @@ classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opa
 
 pathology = "Fracture"
 train_data, val_data = get_pathology(pathology)
-display(train_data.head())
-display(val_data.head())
 
 class_mapping = train_data.class_indices 
 print(class_mapping)
