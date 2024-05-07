@@ -10,6 +10,8 @@ from keras.src.legacy.preprocessing.image import ImageDataGenerator
 from keras import Model
 from keras import layers 
 from sklearn.model_selection import train_test_split
+from keras.src.applications.densenet import DenseNet121, preprocess_input 
+from keras.src.applications.resnet import ResNet50, preprocess_input
 from keras.src.applications.vgg16 import VGG16, preprocess_input
 
 BATCH_SIZE = 64 
@@ -70,13 +72,13 @@ def get_pathology(pathology):
                                         test_size=TEST_SIZE,
                                         random_state=42)
 
-    # train_datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
-    #                                 rescale=1./255, #Normalize
-    #                                 zoom_range=0.4,
-    #                                 horizontal_flip=True)
-    train_datagen = ImageDataGenerator(rescale=1./255, #Normalize
+    train_datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
+                                    rescale=1./255, #Normalize
                                     zoom_range=0.1,
                                     horizontal_flip=True)
+    # train_datagen = ImageDataGenerator(rescale=1./255, #Normalize
+    #                                 zoom_range=0.1,
+    #                                 horizontal_flip=True)
 
     val_datagen = ImageDataGenerator(rescale=1./255)
 
@@ -125,7 +127,14 @@ pathology = "Fracture"
 train_data, val_data = get_pathology(pathology)
 
 # VGG16 Model
-conv_base = VGG16(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
+# conv_base = VGG16(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
+
+# Resnet 
+# conv_base = ResNet50(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
+
+# DenseNet
+conv_base = DenseNet121(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
+
 # Customize top layer
 top_layer = conv_base.output
 top_layer = keras.layers.GlobalAveragePooling2D()(top_layer)
