@@ -9,16 +9,17 @@ import keras
 from keras.src.legacy.preprocessing.image import ImageDataGenerator
 from keras import Model, Sequential
 from keras import layers 
-from keras.src.layers import Conv2D, MaxPooling2D, Dense, Flatten
+from keras.src.layers import Conv2D, MaxPooling2D, Dense, Flatten, GlobalAveragePooling2D
 from sklearn.model_selection import train_test_split
-from keras.src.applications.densenet import DenseNet121, preprocess_input 
-from keras.src.applications.resnet import ResNet50, preprocess_input
-from keras.src.applications.vgg16 import VGG16, preprocess_input
+# from keras.src.applications.densenet import DenseNet121, preprocess_input 
+# from keras.src.applications.resnet import ResNet18, preprocess_input
+# from keras.src.applications.vgg16 import VGG16, preprocess_input
+from keras.src.applications.inception_v3 import InceptionV3
 
-BATCH_SIZE = 64 
+BATCH_SIZE = 64
 NUM_EPOCHS = 1 
 LEARNING_RATE = 0.0002 
-HPC = False 
+HPC = True  
 
 gpus = tf.config.list_physical_devices('GPU')
 print("Num GPUs Available: ", len(gpus))
@@ -47,8 +48,6 @@ else:
     TEST_SIZE = 0.5 
 
 df_test = pd.read_csv(labels_path_test)
-print(df_train)
-print(df_test)
 
 def parse_labels(df):
     df.fillna(0, inplace=True)
@@ -73,9 +72,9 @@ def get_pathology(pathology):
                                         test_size=TEST_SIZE,
                                         random_state=42)
 
-    train_datagen = ImageDataGenerator(rescale=1./255, #Normalize
-                                    zoom_range=0.1,
-                                    horizontal_flip=True)
+    train_datagen = ImageDataGenerator(rescale=1./255,
+                                       zoom_range=0.1,
+                                       horizontal_flip=True)
 
     val_datagen = ImageDataGenerator(rescale=1./255)
 
@@ -123,47 +122,32 @@ classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opa
 pathology = "Fracture"
 train_data, val_data = get_pathology(pathology)
 
-class_mapping = train_data.class_indices 
-print(class_mapping)
+# Fine tuning InceptionV3 
+base_model = InceptionV3(weights='imagenet', include_top=False)
+x = base_model.output
+x = GlobalAveragePooling2D()(x)
+# Adding a fully-connected layer
+x = Dense(1024, activation='relu')(x)
+# Adding a logistic layer  
+predictions = Dense(3, activation='sigmoid')(x)
 
-# VGG16 Model
-# conv_base = VGG16(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
+model = Model(inputs=base_model.input, outputs=predictions)
 
-# Resnet 
-conv_base = ResNet50(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
+for layer in base_model.layers:
+    layer.trainable = False
 
-# DenseNet
-# conv_base = DenseNet121(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
+model.compile(optimizer='adam', loss='binary_crossentropy')
 
-# Customize top layer
-top_layer = conv_base.output
-top_layer = keras.layers.GlobalAveragePooling2D()(top_layer)
-top_layer = keras.layers.Dense(512, activation='relu')(top_layer)   
-top_layer = keras.layers.Dense(128, activation='relu')(top_layer)   
-top_layer = keras.layers.Dropout(0.2)(top_layer)
-output_layer = keras.layers.Dense(3, activation='softmax')(top_layer) # Predicting for one pathology 
-
-model = Model(inputs=conv_base.input, outputs=output_layer)
-
-optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
-
-model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
-
-history = model.fit(
-    train_data,
+model.fit(train_data,
     epochs=NUM_EPOCHS,
     validation_data=val_data,
     verbose=1)
 
-training_loss = history.history['loss']
-validation_loss = history.history['val_loss']
-for i in range(NUM_EPOCHS):
-    print(f"Epoch {i+1}: Training Loss = {training_loss[i]:.4f}, Validation Loss = {validation_loss[i]:.4f}")
+# This will show you the mapping between the one-hot encoded vectors and your original labels.
+print(train_data.class_indices)
 
-# Dataframe of predictions 
 predictions = model.predict(test_data)
 preds = pd.DataFrame(predictions) 
-
 output_dir = 'predictions'   
 now = datetime.datetime.now()
 timestamp_str = now.strftime("%m-%d_%H-%M")
