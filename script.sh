@@ -18,4 +18,4 @@ source /home/oxu/my_venv/bin/activate
 
 cd /home/oxu/BroadBahnMi
 
-python pathology_script.py
+python pathology_pytorch.py

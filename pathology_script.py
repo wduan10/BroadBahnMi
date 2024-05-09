@@ -7,8 +7,7 @@ from matplotlib import pyplot as plt
 import tensorflow as tf
 import keras 
 from keras.src.legacy.preprocessing.image import ImageDataGenerator
-from keras import Model, Sequential
-from keras import layers 
+from keras import Model 
 from keras.src.layers import Conv2D, MaxPooling2D, Dense, Flatten, GlobalAveragePooling2D
 from sklearn.model_selection import train_test_split
 # from keras.src.applications.densenet import DenseNet121, preprocess_input 
@@ -67,10 +66,9 @@ def get_pathology(pathology):
     # 'categorical' requires strings
     df['label'] = df['label'].astype(str)
 
-    # Stratified train/test split based on 'Frontal/Lateral' column
     train_df, val_df = train_test_split(df,
                                         test_size=TEST_SIZE,
-                                        random_state=42)
+                                        random_state=42, stratify=df['label'])
 
     train_datagen = ImageDataGenerator(rescale=1./255,
                                        zoom_range=0.1,
@@ -78,7 +76,6 @@ def get_pathology(pathology):
 
     val_datagen = ImageDataGenerator(rescale=1./255)
 
-    # Apply the ImageDataGenerator to create image batches
     train_data = train_datagen.flow_from_dataframe(
         dataframe=train_df,
         directory=img_dir,
