@@ -67,7 +67,7 @@ class PathologyDataset(Dataset):
             image = self.transform(image)
 
         if not self.test:
-            label = self.df.iloc[idx][1] + 1 # label out of bounds 
+            label = self.df.iloc[idx, 1] + 1 # label out of bounds 
             label = torch.tensor(label).long()
             return image, label
         else:
