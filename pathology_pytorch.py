@@ -15,12 +15,12 @@ classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opa
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
 NUM_EPOCHS = 10 
-BATCH_SIZE = 64 
+BATCH_SIZE = 256 
 LEARNING_RATE = 0.0002
 HPC = True 
 IMAGE_SIZE = 224
 NUM_CLASSES = 3
-PATHOLOGY = "Enlarged Cardiomediastinum"
+PATHOLOGY = "Fracture"
 
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(f"Device: {device}")
