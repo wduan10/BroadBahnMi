@@ -14,13 +14,13 @@ from PIL import Image
 classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
-NUM_EPOCHS = 1 
+NUM_EPOCHS = 10 
 BATCH_SIZE = 64 
 LEARNING_RATE = 0.0002
 HPC = True 
 IMAGE_SIZE = 224
 NUM_CLASSES = 3
-PATHOLOGY = "Fracture"
+PATHOLOGY = "Enlarged Cardiomediastinum"
 
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(f"Device: {device}")
@@ -172,7 +172,7 @@ with torch.no_grad():
             rows_list.append([int(id)] + [preds])
 
 df_output = pd.DataFrame(rows_list, columns=['Id', PATHOLOGY])
-df_output.head()
+print(df_output.head())
 
 output_dir = 'predictions'   
 now = datetime.datetime.now()
