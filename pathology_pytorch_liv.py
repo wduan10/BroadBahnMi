@@ -132,6 +132,7 @@ for epoch in range(NUM_EPOCHS):
     model.train()
     for i, data in enumerate(train_dataloader):
         images, labels = data
+        images, labels = images.to(device), labels.to(device) 
         optimizer.zero_grad()
         # forward pass
         output = model(images)
@@ -160,6 +161,7 @@ for epoch in range(NUM_EPOCHS):
         model.eval()
         for i, data in enumerate(val_dataloader):
             images, labels = data
+            images, labels = images.to(device), labels.to(device) 
             # forward pass
             output = model(images)
             # find accuracy
