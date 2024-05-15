@@ -126,7 +126,7 @@ test_dataloader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False)
 # Transfer learning fine tuning approach 
 model = models.densenet121(pretrained=True)
 # Replace first convolutional layer to accept greyscale images
-model.features.conv0 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
+model.features.conv0 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
 for param in model.parameters():
     # Freezes weights 
