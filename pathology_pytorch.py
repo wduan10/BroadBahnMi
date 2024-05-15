@@ -1,32 +1,31 @@
-import os
-import sys
 import torch
+import os
+import datetime
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import pandas as pd
-import torchvision
-from torchvision.io import read_image
-from torch.utils.data import Dataset
-from torchvision.transforms import ToTensor
-from torchvision import datasets
-import torchvision.transforms as transforms
-import matplotlib.pyplot as plt
-from torch.utils.data import DataLoader
-from torchvision import datasets, transforms, models
 import numpy as np
-from ResNet import ResNet50
+import pandas as pd
+import torchvision.transforms as transforms
+from torchvision import datasets, transforms, models
+from torchvision.models import densenet121, DenseNet121_Weights
+from torch.utils.data import Dataset, DataLoader, random_split
 from PIL import Image
+from IPython.display import display
 
-pathology = 'Fracture'
+classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
+           "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
-HPC = True 
-NUM_CLASSES = 3 
-LEARNING_RATE = 0.0002
-NUM_EPOCHS = 1 
+NUM_EPOCHS = 1
 BATCH_SIZE = 256
+LEARNING_RATE = 0.0002
+HPC = True
+IMAGE_SIZE = 224
+NUM_CLASSES = 3
+PATHOLOGY = "Pleural Effusion"
+
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
-print(HPC, device, NUM_EPOCHS)
+print(f"Device: {device}")
 
 if (HPC):
     labels_path_train = '/groups/CS156b/data/student_labels/train2023.csv'
@@ -34,102 +33,80 @@ if (HPC):
     img_dir = '/groups/CS156b/data'
 
     df_train = pd.read_csv(labels_path_train)[:-1]
+
+    TRAIN_SIZE = 0.8
 else:
-    labels_path_train = 'data/train/labels/labels.csv'
-    labels_path_test = 'data/test/ids.csv'
-    img_dir = 'data'
+    labels_path_train = '/content/BroadBahnMi/data/train/labels/labels.csv'
+    labels_path_test = '/content/BroadBahnMi/data/test/ids.csv'
+    img_dir = '/content/BroadBahnMi/data'
 
     df_train = pd.read_csv(labels_path_train)
+    TRAIN_SIZE = 0.5
 
-df_train = df_train[['Path', pathology]]
-df_train = df_train.dropna()
 df_test = pd.read_csv(labels_path_test)
-print(df_train.head())
-print(df_test.head())
+df_test_pathology = df_test[['Path', 'Id']]
 
-def parse_labels(df):
-    df = df[['Path', pathology]]
-    df = df.dropna()
-    return df
+df_train_pathology = df_train[['Path', PATHOLOGY]]
 
-class TrainImageDataset(Dataset):
-    def __init__(self, annotations_file, img_dir, transform=None):
-        if (HPC):
-            self.img_labels = parse_labels(pd.read_csv(annotations_file)[:-1])
+# replace nan with zeros
+df_train_pathology.loc[:, PATHOLOGY] = df_train_pathology[PATHOLOGY].fillna(0)
+
+class PathologyDataset(Dataset):
+    def __init__(self, dataframe, img_dir, transform=None, test=False):
+        self.df = dataframe
+        self.img_dir = img_dir
+        self.transform = transform
+        self.test = test
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        img_path = os.path.join(self.img_dir, self.df.iloc[idx]['Path'])
+        image = Image.open(img_path)
+
+        if self.transform:
+            image = self.transform(image)
+
+        if not self.test:
+            # print(self.df.iloc[idx][PATHOLOGY] + 1)
+            label = self.df.iloc[idx][PATHOLOGY] + 1 # label out of bounds
+            label = torch.tensor(label).long()
+            # print(label)
+            return image, label
         else:
-            self.img_labels = parse_labels(pd.read_csv(annotations_file))
-        self.img_dir = img_dir
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.img_labels)
-
-    def __getitem__(self, idx):
-        row = self.img_labels.iloc[idx]
-
-        img_path = row['Path']
-        img_path = os.path.join(self.img_dir, img_path)
-
-        image = Image.open(img_path) # PIL image for applying transform for pre-trained ResNet model 
-        label_num = row[-1] + 1 # -1 => 0, 0 => 1, 1 => 2
-        label = torch.tensor(label_num).long()
-
-        if self.transform:
-            image = self.transform(image)
-
-        return image, label
-    
-class TestImageDataset(Dataset):
-    def __init__(self, annotations_file, img_dir, transform=None):
-        self.img_labels = pd.read_csv(annotations_file)
-        self.img_dir = img_dir
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.img_labels)
-
-    def __getitem__(self, idx):
-        row = self.img_labels.iloc[idx]
-
-        img_path = row['Path']
-        img_path = os.path.join(self.img_dir, img_path)
-
-        # image = read_image(img_path)
-        image = Image.open(img_path) # PIL image for applying transform for pre-trained ResNet model 
-        label = row['Id']
-
-        if self.transform:
-            image = self.transform(image)
-
-        return image, label
+            # Return the image and ID for test samples
+            id = self.df.iloc[idx]['Id']
+            return image, id
 
 transform = transforms.Compose([
-    transforms.Lambda(lambda image: image.convert('RGB')),
-    transforms.Resize((256, 256)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-])
+            transforms.ToTensor(),
+            transforms.Resize((256, 256)),
+            transforms.CenterCrop(224),
+            transforms.Normalize((0.5,), (0.5,))
+        ])
 
-training_data = TrainImageDataset(labels_path_train, img_dir, transform=transform)
-test_data = TestImageDataset(labels_path_test, img_dir, transform=transform)
+# Dataloader
+train_data = PathologyDataset(df_train_pathology, img_dir, transform=transform)
+test_data = PathologyDataset(df_test_pathology, img_dir, transform=transform, test=True)
 
-train_size = int(0.8 * len(training_data))
-val_size = len(training_data) - train_size
-training_data, val_data = torch.utils.data.random_split(training_data, [train_size, val_size])
+total_size = len(train_data)
+train_size = int(total_size * TRAIN_SIZE)
+test_size = total_size - train_size
 
-train_dataloader = DataLoader(training_data, batch_size=BATCH_SIZE, shuffle=True)
-val_dataloader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=True)
+train_dataset, val_dataset = random_split(train_data, [train_size, test_size])
+
+train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+val_dataloader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False)
 
-# model = ResNet50(3).to(device)
-# Model 
-# Transfer learning fine tuning approach 
-model = models.densenet121(pretrained=True)
+# Model, using a transfer learning fine tuning approach
+model = models.densenet121(weights=DenseNet121_Weights.DEFAULT)
 # Replace first convolutional layer to accept greyscale images
-model.features.conv0 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
+model.features.conv0 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
 for param in model.parameters():
-    # Freezes weights 
+    # Freezes weights
     param.requires_grad = False
 
 model.classifier = nn.Sequential(nn.Linear(1024, 512),
@@ -141,21 +118,20 @@ model.classifier = nn.Sequential(nn.Linear(1024, 512),
 model.to(device)
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, betas=(0.5, 0.999))
+optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 # store metrics
-training_loss_history = np.zeros(NUM_EPOCHS)
-validation_loss_history = np.zeros(NUM_EPOCHS)
+training_loss_history = np.zeros([NUM_EPOCHS, 1])
+validation_loss_history = np.zeros([NUM_EPOCHS, 1])
 
 for epoch in range(NUM_EPOCHS):
-    print(f'Epoch {epoch+1}/{NUM_EPOCHS}:')
+    print(f'Epoch {epoch+1}/10:', end='')
     train_total = 0
     train_correct = 0
     # train
     model.train()
     for i, data in enumerate(train_dataloader):
         images, labels = data
-        images, labels = images.to(device), labels.to(device)
         optimizer.zero_grad()
         # forward pass
         output = model(images)
@@ -165,47 +141,68 @@ for epoch in range(NUM_EPOCHS):
         loss.backward()
         optimizer.step()
 
+        # track training accuracy
+        _, predicted = torch.max(output.data, 1)
+        train_total += labels.size(0)
+        train_correct += (predicted == labels).sum().item()
         # track training loss
         training_loss_history[epoch] += loss.item()
-    
+        # progress update after 180 batches (~1/10 epoch for batch size 32)
+        if i % 180 == 0: print('.',end='')
     training_loss_history[epoch] /= len(train_dataloader)
-    print(f'Training Loss: {training_loss_history[epoch]:0.4f}')
+    # training_accuracy_history[epoch] = train_correct / train_total
+    print(f'\n\tloss: {training_loss_history[epoch,0]:0.4f}')
 
     # validate
+    test_total = 0
+    test_correct = 0
     with torch.no_grad():
         model.eval()
         for i, data in enumerate(val_dataloader):
             images, labels = data
-            images, labels = images.to(device), labels.to(device)
             # forward pass
             output = model(images)
+            # find accuracy
+            _, predicted = torch.max(output.data, 1)
+            test_total += labels.size(0)
+            test_correct += (predicted == labels).sum().item()
             # find loss
             loss = criterion(output, labels)
             validation_loss_history[epoch] += loss.item()
         validation_loss_history[epoch] /= len(val_dataloader)
-    print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
+        # validation_accuracy_history[epoch] = test_correct / test_total
+    print(f', val loss: {validation_loss_history[epoch,0]:0.4f}')
 
-# get predictions on test set
-rows_list = []
+# Predictions on the test set 
+predictions = []
+pred_ids = []
+
 with torch.no_grad():
-    model.eval()
-    for i, data in enumerate(test_dataloader):
-        images, ids = data
-        images, ids = images.to(device), ids.to(device)
-        
-        output = np.array(model(images).cpu())
-        output = np.argmax(output, axis=1) - 1
-        for preds, id in zip(output, ids):
-            rows_list.append([int(id)] + [preds])
+    for images, ids in test_dataloader:
+        images = images.to(device)  # Only move images to GPU
+        outputs = model(images)
 
-df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
-df_output.head()
+        # Move the model output to CPU and then to numpy before argmax
+        outputs = outputs.to(device).numpy()
+        output = np.argmax(outputs, axis=1)
 
+        predicted = output - 1 
 
-if (HPC):
-    output_dir = '/groups/CS156b/2024/BroadBahnMi/predictions'
-else:
-    output_dir = 'predictions'
+        predictions.extend(predicted.tolist())   
+        pred_ids.extend(ids.to(device).tolist())      
 
-full_path = os.path.join(output_dir, f'preds_{pathology}.csv')
-df_output.to_csv(full_path, index=False)
+results_df = pd.DataFrame({
+    'Id': pred_ids,
+    PATHOLOGY: predictions
+})
+
+display(results_df.head())
+# Save predictions to CSV (adjust file path as needed)
+output_dir = 'predictions'   
+now = datetime.datetime.now()
+timestamp_str = now.strftime("%m-%d_%H-%M")
+filename = f"{PATHOLOGY}_preds_{timestamp_str}.csv" 
+os.makedirs(output_dir, exist_ok=True)
+full_path = os.path.join(output_dir, filename) 
+results_df.to_csv(full_path, index=False) 
+print(f"Predictions saved to {full_path}")
