@@ -16,7 +16,7 @@ from IPython.display import display
 classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
-NUM_EPOCHS = 1
+NUM_EPOCHS = 10 
 BATCH_SIZE = 256
 LEARNING_RATE = 0.0002
 HPC = True
