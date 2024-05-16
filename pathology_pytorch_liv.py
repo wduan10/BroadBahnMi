@@ -181,17 +181,12 @@ pred_ids = []
 
 with torch.no_grad():
     for images, ids in test_dataloader:
-        images = images.to(device)  # Only move images to GPU
+        images = images.to(device)
         outputs = model(images)
 
-        # Move the model output to CPU and then to numpy before argmax
-        outputs = outputs.to(device).numpy()
-        output = np.argmax(outputs, axis=1)
-
-        predicted = output - 1 
-
-        predictions.extend(predicted.tolist())   
-        pred_ids.extend(ids.to(device).tolist())      
+        predicted = torch.argmax(outputs, dim=1) - 1
+        predictions.extend(predicted.cpu().tolist())
+        pred_ids.extend(ids.cpu().tolist())
 
 results_df = pd.DataFrame({
     'Id': pred_ids,
