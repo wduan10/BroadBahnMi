@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[32]:
 
 
 print('Importing')
@@ -26,13 +26,13 @@ from PIL import Image
 print('Done importing')
 
 
-# In[2]:
+# In[33]:
 
 
 pathology = 'Enlarged Cardiomediastinum'
 
 
-# In[3]:
+# In[34]:
 
 
 hpc = False
@@ -41,7 +41,7 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
-# In[24]:
+# In[35]:
 
 
 lr = 0.0002
@@ -52,7 +52,7 @@ device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs, n_cpu)
 
 
-# In[25]:
+# In[36]:
 
 
 if (hpc):
@@ -75,7 +75,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[30]:
+# In[37]:
 
 
 def parse_labels(df):
@@ -135,7 +135,7 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[31]:
+# In[39]:
 
 
 transform = transforms.Compose([
@@ -152,7 +152,7 @@ train_size = int(0.8 * len(training_data))
 val_size = len(training_data) - train_size
 training_data, val_data = torch.utils.data.random_split(training_data, [train_size, val_size])
 
-train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
+train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True, num_workers=max(0, n_cpu-1))
 val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
@@ -161,7 +161,7 @@ test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
 model = ResNet50(3)
-# model = nn.DataParallel(model)
+model = nn.DataParallel(model)
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
@@ -216,7 +216,7 @@ for epoch in range(n_epochs):
 
 # In[10]:
 
-'''
+
 # get predictions on test set
 rows_list = []
 with torch.no_grad():
@@ -252,4 +252,3 @@ df_output.to_csv(full_path, index=False)
 
 
 
-'''
