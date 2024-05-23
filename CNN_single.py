@@ -215,7 +215,7 @@ for epoch in range(n_epochs):
 
 
 # In[10]:
-
+'''
 
 # get predictions on test set
 rows_list = []
@@ -252,3 +252,4 @@ df_output.to_csv(full_path, index=False)
 
 
 
+'''
