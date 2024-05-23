@@ -6,7 +6,7 @@
 #SBATCH -A CS156b
 #SBATCH --time=24:00:00
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
 #SBATCH --gres gpu:4
 #SBATCH --mail-user=wduan@caltech.edu

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[6]:
+# In[1]:
 
 
 print('Importing')
@@ -26,13 +26,13 @@ from PIL import Image
 print('Done importing')
 
 
-# In[7]:
+# In[2]:
 
 
 pathology = 'Enlarged Cardiomediastinum'
 
 
-# In[8]:
+# In[3]:
 
 
 hpc = False
@@ -41,17 +41,18 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
-# In[9]:
+# In[24]:
 
 
 lr = 0.0002
-n_epochs = 10
+n_epochs = 1
 batch_size = 256
+n_cpu = 4 if hpc else 0
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
-print(hpc, device, n_epochs)
+print(hpc, device, n_epochs, n_cpu)
 
 
-# In[10]:
+# In[25]:
 
 
 if (hpc):
@@ -74,7 +75,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[11]:
+# In[30]:
 
 
 def parse_labels(df):
@@ -134,7 +135,7 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[12]:
+# In[31]:
 
 
 transform = transforms.Compose([
@@ -151,45 +152,23 @@ train_size = int(0.8 * len(training_data))
 val_size = len(training_data) - train_size
 training_data, val_data = torch.utils.data.random_split(training_data, [train_size, val_size])
 
-train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
+train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
 val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[17]:
+# In[28]:
 
 
-'''
-# sample model with dropout = 0.1
-model = nn.Sequential(
-    nn.Conv2d(3, 8, kernel_size=(3, 3)),
-    nn.BatchNorm2d(num_features=8),
-    nn.ReLU(),
-    nn.MaxPool2d(2),
-    nn.Dropout(p=0.1),
-
-    nn.Conv2d(8, 4, kernel_size=(3, 3)),
-    nn.BatchNorm2d(num_features=4),
-    nn.ReLU(),
-    nn.MaxPool2d(2),
-    nn.Dropout(p=0.1),
-
-    nn.Flatten(),
-    nn.Linear(62*62*4, 64),
-    nn.ReLU(),
-    nn.Linear(64, 3),
-    # PyTorch implementation of cross-entropy loss includes softmax layer
-).to(device)
-'''
-
-model = ResNet50(3).to(device)
-
+model = ResNet50(3)
+model = nn.DataParallel(model)
+model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[18]:
+# In[29]:
 
 
 # store metrics
@@ -235,7 +214,7 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[23]:
+# In[10]:
 
 
 # get predictions on test set
@@ -255,7 +234,7 @@ df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
 df_output.head()
 
 
-# In[47]:
+# In[16]:
 
 
 if (hpc):
@@ -263,7 +242,8 @@ if (hpc):
 else:
     output_dir = 'predictions'
 
-full_path = os.path.join(output_dir, f'preds_{pathology}.csv')
+filename = '_'.join(pathology.split())
+full_path = os.path.join(output_dir, f'preds_{filename}.csv')
 df_output.to_csv(full_path, index=False)
 
 
