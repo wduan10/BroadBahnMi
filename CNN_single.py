@@ -161,7 +161,7 @@ test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
 model = ResNet50(3)
-model = nn.DataParallel(model)
+# model = nn.DataParallel(model)
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
