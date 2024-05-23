@@ -46,7 +46,7 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
 
 lr = 0.0002
 n_epochs = 1
-batch_size = 256
+batch_size = 128
 n_cpu = 4 if hpc else 0
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs, n_cpu)
@@ -215,7 +215,7 @@ for epoch in range(n_epochs):
 
 
 # In[10]:
-'''
+
 
 # get predictions on test set
 rows_list = []
@@ -252,4 +252,3 @@ df_output.to_csv(full_path, index=False)
 
 
 
-'''
