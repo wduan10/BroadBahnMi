@@ -152,7 +152,7 @@ train_size = int(0.8 * len(training_data))
 val_size = len(training_data) - train_size
 training_data, val_data = torch.utils.data.random_split(training_data, [train_size, val_size])
 
-train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
+train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
 val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
