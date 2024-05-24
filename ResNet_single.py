@@ -47,9 +47,8 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
 lr = 0.0002
 n_epochs = 1
 batch_size = 128
-n_cpu = 4 if hpc else 0
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
-print(hpc, device, n_epochs, n_cpu)
+print(hpc, device, n_epochs)
 
 
 # In[6]:
@@ -172,7 +171,6 @@ train_size = int(0.8 * len(training_data))
 val_size = len(training_data) - train_size
 training_data, val_data = torch.utils.data.random_split(training_data, [train_size, val_size])
 
-# train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True, num_workers=max(0, n_cpu-1))
 train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
 val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
