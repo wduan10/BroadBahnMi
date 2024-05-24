@@ -44,7 +44,7 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
 
 
 # In[18]:
-'''
+
 
 lr = 0.0002
 n_epochs = 1
@@ -274,4 +274,3 @@ df_output.to_csv(full_path, index=False)
 
 
 
-'''
