@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[14]:
 
 
 print('Importing')
@@ -26,13 +26,13 @@ from PIL import Image
 print('Done importing')
 
 
-# In[3]:
+# In[24]:
 
 
 pathology = 'Enlarged Cardiomediastinum'
 
 
-# In[4]:
+# In[16]:
 
 
 hpc = False
@@ -41,7 +41,7 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
-# In[5]:
+# In[17]:
 
 
 lr = 0.0002
@@ -51,7 +51,7 @@ device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs)
 
 
-# In[6]:
+# In[18]:
 
 
 if (hpc):
@@ -74,7 +74,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[7]:
+# In[19]:
 
 
 def parse_labels(df):
@@ -134,26 +134,26 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[8]:
+# In[20]:
 
 
 # default transform:
-# transform = transforms.Compose([
-#     transforms.Lambda(lambda image: image.convert('RGB')),
-#     transforms.Resize((256, 256)),
-#     transforms.ToTensor(),
-#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-# ])
-
-# transform with random flipping and cropping:
 transform = transforms.Compose([
     transforms.Lambda(lambda image: image.convert('RGB')),
-    transforms.Resize((300, 300)),
+    transforms.Resize((256, 256)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomCrop((256, 256))
 ])
+
+# transform with random flipping and cropping:
+# transform = transforms.Compose([
+#     transforms.Lambda(lambda image: image.convert('RGB')),
+#     transforms.Resize((300, 300)),
+#     transforms.ToTensor(),
+#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+#     transforms.RandomHorizontalFlip(),
+#     transforms.RandomCrop((256, 256))
+# ])
 
 # transform with Gaussian blur:
 # transform = transforms.Compose([
@@ -176,7 +176,7 @@ val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[9]:
+# In[21]:
 
 
 model = ResNet50(3)
@@ -186,7 +186,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[12]:
+# In[22]:
 
 
 # store metrics
@@ -230,7 +230,7 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[13]:
+# In[23]:
 
 
 # get predictions on test set
@@ -250,7 +250,7 @@ df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
 df_output.head()
 
 
-# In[16]:
+# In[29]:
 
 
 if (hpc):
@@ -258,7 +258,11 @@ if (hpc):
 else:
     output_dir = 'predictions'
 
-filename = '_'.join(pathology.split())
+from datetime import datetime 
+time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+filename = '_'.join(pathology.split()) + '_' + time
+filename = filename.replace(' ', '_')
 full_path = os.path.join(output_dir, f'preds_{filename}.csv')
 df_output.to_csv(full_path, index=False)
 
