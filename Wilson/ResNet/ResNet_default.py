@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[9]:
+# In[19]:
 
 
 print('Importing')
@@ -26,13 +26,13 @@ from PIL import Image
 print('Done importing')
 
 
-# In[10]:
+# In[20]:
 
 
 pathology = 'Enlarged Cardiomediastinum'
 
 
-# In[11]:
+# In[21]:
 
 
 hpc = False
@@ -41,17 +41,18 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
-# In[18]:
+# In[22]:
 
 
 lr = 0.0002
 n_epochs = 1
+n_cpu = 4 if hpc else 0
 batch_size = 128
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
-print(hpc, device, n_epochs)
+print(hpc, device, n_epochs, n_cpu)
 
 
-# In[13]:
+# In[23]:
 
 
 if (hpc):
@@ -74,7 +75,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[14]:
+# In[24]:
 
 
 def parse_labels(df):
@@ -134,7 +135,7 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[15]:
+# In[25]:
 
 
 # default transform:
@@ -171,22 +172,23 @@ train_size = int(0.8 * len(training_data))
 val_size = len(training_data) - train_size
 training_data, val_data = torch.utils.data.random_split(training_data, [train_size, val_size])
 
-train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
-val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
+train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
+val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[16]:
+# In[26]:
 
 
 model = ResNet50(3)
+model = nn.DataParallel(model)
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[17]:
+# In[27]:
 
 
 # store metrics
@@ -230,7 +232,7 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[ ]:
+# In[28]:
 
 
 # get predictions on test set
@@ -250,7 +252,7 @@ df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
 df_output.head()
 
 
-# In[12]:
+# In[29]:
 
 
 if (hpc):
