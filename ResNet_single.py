@@ -138,22 +138,22 @@ class TestImageDataset(Dataset):
 
 
 # default transform:
-transform = transforms.Compose([
-    transforms.Lambda(lambda image: image.convert('RGB')),
-    transforms.Resize((256, 256)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-])
-
-# transform with random flipping and cropping:
 # transform = transforms.Compose([
 #     transforms.Lambda(lambda image: image.convert('RGB')),
-#     transforms.Resize((300, 300)),
+#     transforms.Resize((256, 256)),
 #     transforms.ToTensor(),
 #     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-#     transforms.RandomHorizontalFlip(),
-#     transforms.RandomCrop((256, 256))
 # ])
+
+# transform with random flipping and cropping:
+transform = transforms.Compose([
+    transforms.Lambda(lambda image: image.convert('RGB')),
+    transforms.Resize((300, 300)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomCrop((256, 256))
+])
 
 # transform with Gaussian blur:
 # transform = transforms.Compose([
