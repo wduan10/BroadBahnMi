@@ -22,7 +22,7 @@ LEARNING_RATE = 0.0002
 HPC = True
 IMAGE_SIZE = 224
 NUM_CLASSES = 3
-PATHOLOGY = "Pleural Other"
+PATHOLOGY = "Support Devices"
 
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(f"Device: {device}")
@@ -43,13 +43,13 @@ else:
     df_train = pd.read_csv(labels_path_train)
     TRAIN_SIZE = 0.5
 
+# replace nan with zeros
+df_train = df_train.fillna(0)
+
 df_test = pd.read_csv(labels_path_test)
 df_test_pathology = df_test[['Path', 'Id']]
 
 df_train_pathology = df_train[['Path', PATHOLOGY]]
-
-# replace nan with zeros
-df_train_pathology.loc[:, PATHOLOGY] = df_train_pathology[PATHOLOGY].fillna(0)
 
 class PathologyDataset(Dataset):
     def __init__(self, dataframe, img_dir, transform=None, test=False):
@@ -79,10 +79,10 @@ class PathologyDataset(Dataset):
             id = self.df.iloc[idx]['Id']
             return image, id
 
+
 transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Resize((256, 256)),
-            transforms.CenterCrop(224),
+            transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
             transforms.Normalize((0.5,), (0.5,))
         ])
 
