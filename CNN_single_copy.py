@@ -19,9 +19,13 @@ from torch.utils.data import DataLoader
 import numpy as np
 from PIL import Image
 
+# Setup check
+hpc = False
+if len(sys.argv) > 1 and sys.argv[1] == 'hpc':
+    hpc = True 
+
 pathology = 'Enlarged Cardiomediastinum'
 
-hpc = True 
 lr = 0.0002
 n_epochs = 1
 batch_size = 128
@@ -190,11 +194,15 @@ with torch.no_grad():
 df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
 df_output.head()
 
-output_dir = 'predictions'   
-now = datetime.datetime.now()
-timestamp_str = now.strftime("%m-%d_%H-%M")
-filename = f"{pathology}_preds_{timestamp_str}.csv" 
-os.makedirs(output_dir, exist_ok=True)
-full_path = os.path.join(output_dir, filename) 
-df_output.to_csv(full_path, index=False) 
-print(f"Predictions saved to {full_path}")
+if (hpc):
+    output_dir = '/groups/CS156b/2024/BroadBahnMi/predictions'
+else:
+    output_dir = 'predictions'
+
+number = 1
+for file in os.listdir(output_dir):
+    if (file[:5] == 'preds'):
+        number = max(number, int(file[6:-4]) + 1)
+
+full_path = os.path.join(output_dir, f'{pathology}_preds_{number}.csv')
+df_output.to_csv(full_path, index=False)
