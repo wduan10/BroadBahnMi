@@ -115,7 +115,25 @@ class TestImageDataset(Dataset):
             image = self.transform(image)
         return image, img_id
 
+class ImageDataset(Dataset):
+    def __init__(self, annotations_file, img_dir, transform=None):
+        self.df = pd.read_csv(annotations_file)
+        self.img_dir = img_dir
+        self.transform = transform
 
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        row = self.df.iloc[idx]
+        img_path = os.path.join(self.img_dir, row['Path'])
+        image = Image.open(img_path).convert('RGB')
+
+        if self.transform:
+            image = self.transform(image)
+
+        label = row['Label']  # Assuming 'Label' is the column with pathology labels
+        return image, label
 # In[3]:
 
 # In[4]
@@ -124,99 +142,52 @@ resnet = resnet18(weights=ResNet18_Weights.DEFAULT)
 resnet.fc = nn.Identity()  # Modify the last layer to output the feature vector directly
 resnet = resnet.to(device)
 
-train_data = ImageDataset(labels_path_train, img_dir, transform, feature_extract_model=resnet)
+train_data = ImageDataset(labels_path_train, img_dir, transform)
 train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+
 test_data = ImageDataset(labels_path_test, img_dir, transform)
 test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 # In[5]
-
 train_features = []
 train_ids = []
-for images, ids in train_loader:
-    images = images.to(device)
-    outputs = resnet(images)
-    train_features.extend(outputs.cpu().numpy())
-    train_ids.extend(ids)
+resnet.eval()
+with torch.no_grad():
+    for images, ids in train_loader:
+        images = images.to(device)
+        features = resnet(images)
+        train_features.extend(features.cpu().numpy())
+        train_ids.extend(ids.numpy())
 
 train_features = np.array(train_features)
 linkage_matrix = linkage(train_features, method='ward')
 train_cluster_labels = fcluster(linkage_matrix, t=15, criterion='distance')
 
+# Assign most common pathology to each cluster
+cluster_to_pathology = defaultdict(list)
+for label, cluster in zip(train_ids, train_cluster_labels):
+    cluster_to_pathology[cluster].append(label)
+cluster_to_common_pathology = {cluster: Counter(pathologies).most_common(1)[0][0] for cluster, pathologies in cluster_to_pathology.items()}
+# Classify test images
+nbrs = NearestNeighbors(n_neighbors=1).fit(train_features)
+test_features = []
+test_ids = []
+with torch.no_grad():
+    for images, ids in test_loader:
+        images = images.to(device)
+        features = resnet(images)
+        test_features.extend(features.cpu().numpy())
+        test_ids.extend(ids)
 
-features = []
-ids = []
-for images, image_ids in test_dataloader:
-    images = images.to(device)
-    with torch.no_grad():
-        outputs = resnet(images)
-    print("Batch output shape:", outputs.shape)
-    if outputs.numel() == 0:
-        print("Warning: No data in outputs.")
-    features.extend(outputs.cpu().numpy())
-    ids.extend(image_ids)
+distances, indices = nbrs.kneighbors(test_features)
+predicted_clusters = train_cluster_labels[indices.flatten()]
+predicted_pathologies = [cluster_to_common_pathology[cluster] for cluster in predicted_clusters]
 
-print("Collected features from", len(features), "images.")
-"""
-if features:
-    features = [output.flatten() for output in features]
-    features = np.vstack(features)
-    print("Shape of features for clustering:", features.shape)
+# Output results
+for img_id, pathology in zip(test_ids, predicted_pathologies):
+    print(f"Image ID: {img_id}, Predicted Pathology: {pathology}")
 
-    if features.size > 0:
-        linkage_matrix = linkage(features, method='ward')
-        plt.figure(figsize=(10, 7))
-        dendrogram(linkage_matrix)
-        plt.title('Hierarchical Clustering Dendrogram')
-        plt.xlabel('Sample index')
-        plt.ylabel('Distance')
-        plt.show()
-
-"""
-
-# In[6]
-
-# make visualizations
-features_array = np.array(features)
-linkage_matrix = linkage(features_array, method='ward')
-
-cutoff = 15  
-cluster_labels = fcluster(linkage_matrix, cutoff, criterion='distance')
-
-clustered_data = list(zip(ids, cluster_labels))
-print(clustered_data)
-
-def load_image(image_id, img_dir):
-    img_path = os.path.join(img_dir, image_id)
-    return mpimg.imread(img_path)
-
-clustered_data.sort(key=lambda x: x[1])
-
-cluster_sizes = defaultdict(int)
-for _, cluster_label in clustered_data:
-    cluster_sizes[cluster_label] += 1
-max_images_in_cluster = max(cluster_sizes.values())
-
-fig, axes = plt.subplots(nrows=max(cluster_sizes.keys()) + 1, ncols=max_images_in_cluster, figsize=(20, 10))
-fig.suptitle('Images Grouped by Cluster', fontsize=16)
-
-for ax_row in axes:
-    for ax in ax_row:
-        ax.axis('off')
-
-cluster_indices = defaultdict(int)
-for image_id, cluster_label in clustered_data:
-    row = cluster_label
-    col = cluster_indices[cluster_label]
-    ax = axes[row][col]
-    img = load_image(image_id, img_dir)
-    ax.imshow(img)
-    ax.set_title(f'Cluster {cluster_label}', fontsize=10)
-    ax.axis('on')  
-    cluster_indices[cluster_label] += 1  
-
-plt.tight_layout(pad=1.0)  
+# Optionally, visualize results
+fig, ax = plt.subplots(figsize=(10, 7))
+ax.scatter(range(len(predicted_pathologies)), predicted_pathologies, c=predicted_clusters)
 plt.show()
-
-# In[7]
-
