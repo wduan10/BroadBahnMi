@@ -21,7 +21,7 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 import numpy as np
-from Wilson.DenseNet.DenseNet_model import DenseNet
+from DenseNet_model import DenseNet
 from PIL import Image
 print('Done importing')
 
@@ -45,7 +45,7 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
 
 
 lr = 0.0002
-n_epochs = 20
+n_epochs = 1
 batch_size = 128
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs)
