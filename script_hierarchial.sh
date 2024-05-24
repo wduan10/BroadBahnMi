@@ -16,6 +16,6 @@
 
 source /home/mbanik/my_venv/bin/activate
 
-cd /home/mbanik/BroadBahnMi
+cd /central/groups/CS156b/2024/BroadBahnMi/
 
 python hierarchical_cluster.py
