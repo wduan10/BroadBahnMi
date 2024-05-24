@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#SBATCH --job-name=ResNet
+#SBATCH --job-name=DenseNet
 #SBATCH --output=/central/groups/CS156b/2024/BroadBahnMi/%j.out
 #SBATCH --error=/central/groups/CS156b/2024/BroadBahnMi/%j.err
 #SBATCH -A CS156b
-#SBATCH --time=48:00:00
+#SBATCH --time=4:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
@@ -18,4 +18,4 @@ source /home/wduan/venvs/CS156b/bin/activate
 
 cd /central/groups/CS156b/2024/BroadBahnMi/
 
-python ResNet_single.py hpc
+python DenseNet_single.py hpc
