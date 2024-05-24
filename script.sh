@@ -16,7 +16,7 @@
 
 source /home/oxu/my_venv/bin/activate
 
-# cd /home/oxu/BroadBahnMi
-cd /central/groups/CS156b/2024/BroadBahnMi/
+cd /home/oxu/BroadBahnMi
+# cd /central/groups/CS156b/2024/BroadBahnMi/
 
 python CNN_single_copy.py
