@@ -17,7 +17,7 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 import numpy as np
-from ResNet import ResNet50
+from Wilson.ResNet.ResNet import ResNet50
 from PIL import Image
 print('Done importing')
 

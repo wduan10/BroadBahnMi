@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[14]:
+# In[33]:
 
 
 print('Importing')
@@ -21,18 +21,18 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 import numpy as np
-from ResNet import ResNet50
+from Wilson.DenseNet.DenseNet_model import DenseNet
 from PIL import Image
 print('Done importing')
 
 
-# In[24]:
+# In[22]:
 
 
 pathology = 'Enlarged Cardiomediastinum'
 
 
-# In[16]:
+# In[23]:
 
 
 hpc = False
@@ -41,7 +41,7 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
-# In[17]:
+# In[24]:
 
 
 lr = 0.0002
@@ -51,7 +51,7 @@ device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs)
 
 
-# In[18]:
+# In[25]:
 
 
 if (hpc):
@@ -74,7 +74,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[19]:
+# In[26]:
 
 
 def parse_labels(df):
@@ -134,16 +134,16 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[20]:
+# In[27]:
 
 
 # default transform:
-# transform = transforms.Compose([
-#     transforms.Lambda(lambda image: image.convert('RGB')),
-#     transforms.Resize((256, 256)),
-#     transforms.ToTensor(),
-#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-# ])
+transform = transforms.Compose([
+    transforms.Lambda(lambda image: image.convert('RGB')),
+    transforms.Resize((256, 256)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+])
 
 # transform with random flipping and cropping:
 # transform = transforms.Compose([
@@ -156,13 +156,13 @@ class TestImageDataset(Dataset):
 # ])
 
 # transform with Gaussian blur:
-transform = transforms.Compose([
-    transforms.Lambda(lambda image: image.convert('RGB')),
-    transforms.Resize((256, 256)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-    transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))
-])
+# transform = transforms.Compose([
+#     transforms.Lambda(lambda image: image.convert('RGB')),
+#     transforms.Resize((256, 256)),
+#     transforms.ToTensor(),
+#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+#     transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))
+# ])
 
 training_data = TrainImageDataset(labels_path_train, img_dir, transform=transform)
 test_data = TestImageDataset(labels_path_test, img_dir, transform=transform)
@@ -176,17 +176,17 @@ val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[21]:
+# In[30]:
 
 
-model = ResNet50(3)
+model = DenseNet(channels=3, growth_rate=16, num_classes=3)
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[22]:
+# In[29]:
 
 
 # store metrics
@@ -204,6 +204,8 @@ for epoch in range(n_epochs):
         # forward pass
         output = model(images)
         # calculate categorical cross entropy loss
+        print('output', output.shape)
+        print('label', labels.shape)
         loss = criterion(output, labels)
         # backward pass
         loss.backward()
@@ -230,7 +232,7 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[23]:
+# In[13]:
 
 
 # get predictions on test set
@@ -250,7 +252,7 @@ df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
 df_output.head()
 
 
-# In[29]:
+# In[16]:
 
 
 if (hpc):
@@ -258,11 +260,7 @@ if (hpc):
 else:
     output_dir = 'predictions'
 
-from datetime import datetime 
-time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-
-filename = '_'.join(pathology.split()) + '_' + time
-filename = filename.replace(' ', '_')
+filename = '_'.join(pathology.split())
 full_path = os.path.join(output_dir, f'preds_{filename}.csv')
 df_output.to_csv(full_path, index=False)
 
