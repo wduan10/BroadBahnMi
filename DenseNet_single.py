@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[33]:
 
 
 print('Importing')
@@ -21,18 +21,18 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 import numpy as np
-from ResNet import ResNet50
+from DenseNet_model import DenseNet
 from PIL import Image
 print('Done importing')
 
 
-# In[3]:
+# In[22]:
 
 
 pathology = 'Enlarged Cardiomediastinum'
 
 
-# In[4]:
+# In[23]:
 
 
 hpc = False
@@ -41,7 +41,7 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
-# In[5]:
+# In[24]:
 
 
 lr = 0.0002
@@ -51,7 +51,7 @@ device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs)
 
 
-# In[6]:
+# In[25]:
 
 
 if (hpc):
@@ -74,7 +74,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[7]:
+# In[26]:
 
 
 def parse_labels(df):
@@ -134,26 +134,26 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[8]:
+# In[27]:
 
 
 # default transform:
-# transform = transforms.Compose([
-#     transforms.Lambda(lambda image: image.convert('RGB')),
-#     transforms.Resize((256, 256)),
-#     transforms.ToTensor(),
-#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-# ])
-
-# transform with random flipping and cropping:
 transform = transforms.Compose([
     transforms.Lambda(lambda image: image.convert('RGB')),
-    transforms.Resize((300, 300)),
+    transforms.Resize((256, 256)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomCrop((256, 256))
 ])
+
+# transform with random flipping and cropping:
+# transform = transforms.Compose([
+#     transforms.Lambda(lambda image: image.convert('RGB')),
+#     transforms.Resize((300, 300)),
+#     transforms.ToTensor(),
+#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+#     transforms.RandomHorizontalFlip(),
+#     transforms.RandomCrop((256, 256))
+# ])
 
 # transform with Gaussian blur:
 # transform = transforms.Compose([
@@ -176,17 +176,17 @@ val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[9]:
+# In[30]:
 
 
-model = ResNet50(3)
+model = DenseNet(channels=3, growth_rate=16, num_classes=3)
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[12]:
+# In[29]:
 
 
 # store metrics
@@ -204,6 +204,8 @@ for epoch in range(n_epochs):
         # forward pass
         output = model(images)
         # calculate categorical cross entropy loss
+        print('output', output.shape)
+        print('label', labels.shape)
         loss = criterion(output, labels)
         # backward pass
         loss.backward()
