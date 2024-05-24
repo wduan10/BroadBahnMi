@@ -9,7 +9,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import pandas as pd
-import torchvision
 from torchvision.io import read_image
 from torch.utils.data import Dataset
 from torchvision.transforms import ToTensor
@@ -20,7 +19,11 @@ from torch.utils.data import DataLoader
 import numpy as np
 from PIL import Image
 from torchvision.models import resnet18, ResNet18_Weights
-from scipy.cluster.hierarchy import dendrogram, linkage
+from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
+import matplotlib.image as mpimg
+from collections import defaultdict, Counter
+from sklearn.neighbors import NearestNeighbors
+
 print('Done importing')
 
 hpc = False
@@ -123,32 +126,34 @@ class TestImageDataset(Dataset):
 # Assuming ResNet18 is used for feature extraction
 resnet = resnet18(weights=ResNet18_Weights.DEFAULT)
 resnet.fc = nn.Identity()  # Modify the last layer to output the feature vector directly
+resnet = resnet.to(device)
 
-# Instantiate the dataset with the pre-trained model
-training_data = TrainImageDataset(
-    labels_path_train,
-    img_dir,
-    transform=transform,
-    feature_extract_model=resnet.to(device)
-)
-train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=False)
-
-# Assuming the test dataset might not have labels
-test_data = TestImageDataset(
-    labels_path_test, 
-    img_dir, 
-    transform=transform
-)
-test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
+train_data = ImageDataset(labels_path_train, img_dir, transform, feature_extract_model=resnet)
+train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+test_data = ImageDataset(labels_path_test, img_dir, transform)
+test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 # In[5]
+
+train_features = []
+train_ids = []
+for images, ids in train_loader:
+    images = images.to(device)
+    outputs = resnet(images)
+    train_features.extend(outputs.cpu().numpy())
+    train_ids.extend(ids)
+
+train_features = np.array(train_features)
+linkage_matrix = linkage(train_features, method='ward')
+train_cluster_labels = fcluster(linkage_matrix, t=15, criterion='distance')
+
+
 features = []
 ids = []
 for images, image_ids in test_dataloader:
     images = images.to(device)
     with torch.no_grad():
         outputs = resnet(images)
-    # Check if outputs are collected properly
     print("Batch output shape:", outputs.shape)
     if outputs.numel() == 0:
         print("Warning: No data in outputs.")
@@ -173,55 +178,49 @@ if features:
 
 """
 
+# In[6]
+
+# make visualizations
 features_array = np.array(features)
 linkage_matrix = linkage(features_array, method='ward')
 
-# Example: Analyzing cluster results
-# For a given linkage matrix and a cutoff to define clusters:
-from scipy.cluster.hierarchy import fcluster
-cutoff = 15  # Define your own cutoff based on dendrogram
+cutoff = 15  
 cluster_labels = fcluster(linkage_matrix, cutoff, criterion='distance')
 
-# Map cluster labels back to image IDs
 clustered_data = list(zip(ids, cluster_labels))
 print(clustered_data)
 
-
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-
-# Function to load an image
-def load_image(image_id):
-    img_path = os.path.join(img_dir, image_id)  # Adjust this path as needed
+def load_image(image_id, img_dir):
+    img_path = os.path.join(img_dir, image_id)
     return mpimg.imread(img_path)
 
-# Assuming clustered_data is sorted or will be sorted by cluster labels
-clustered_data.sort(key=lambda x: x[1])  # Sort by cluster label for better organization
+clustered_data.sort(key=lambda x: x[1])
 
-# Determine the layout: find the max number of elements in any cluster
-from collections import defaultdict
 cluster_sizes = defaultdict(int)
 for _, cluster_label in clustered_data:
     cluster_sizes[cluster_label] += 1
 max_images_in_cluster = max(cluster_sizes.values())
 
-# Create a figure with subplots
-fig, axes = plt.subplots(nrows=max(cluster_sizes.keys()) + 1, ncols=max_images_in_cluster, figsize=(15, 10))
-fig.suptitle('Images Grouped by Cluster')
+fig, axes = plt.subplots(nrows=max(cluster_sizes.keys()) + 1, ncols=max_images_in_cluster, figsize=(20, 10))
+fig.suptitle('Images Grouped by Cluster', fontsize=16)
 
-# Hide all axes initially
 for ax_row in axes:
     for ax in ax_row:
         ax.axis('off')
 
-# Plotting images in their respective cluster rows
+cluster_indices = defaultdict(int)
 for image_id, cluster_label in clustered_data:
-    col_index = cluster_sizes[cluster_label] % max_images_in_cluster  # Column index for the image
-    ax = axes[cluster_label][col_index]
-    img = load_image(image_id)
+    row = cluster_label
+    col = cluster_indices[cluster_label]
+    ax = axes[row][col]
+    img = load_image(image_id, img_dir)
     ax.imshow(img)
-    ax.axis('on')  # Only turn on the axes that are used
-    cluster_sizes[cluster_label] += 1
+    ax.set_title(f'Cluster {cluster_label}', fontsize=10)
+    ax.axis('on')  
+    cluster_indices[cluster_label] += 1  
 
-plt.tight_layout()
+plt.tight_layout(pad=1.0)  
 plt.show()
+
+# In[7]
+
