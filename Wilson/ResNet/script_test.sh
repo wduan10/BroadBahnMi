@@ -6,7 +6,7 @@
 #SBATCH -A CS156b
 #SBATCH --time=2:00:00
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=1
 #SBATCH --mem=32G
 #SBATCH --gres gpu:4
 #SBATCH --mail-user=wduan@caltech.edu
@@ -16,6 +16,6 @@
 
 source /home/wduan/venvs/CS156b/bin/activate
 
-cd /central/groups/CS156b/2024/BroadBahnMi/
+cd /central/groups/CS156b/2024/BroadBahnMi/Wilson/ResNet
 
-python ResNet_single.py hpc
+python ResNet_default.py hpc

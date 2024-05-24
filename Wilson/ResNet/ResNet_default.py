@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[32]:
+# In[9]:
 
 
 print('Importing')
@@ -26,13 +26,13 @@ from PIL import Image
 print('Done importing')
 
 
-# In[33]:
+# In[10]:
 
 
 pathology = 'Enlarged Cardiomediastinum'
 
 
-# In[34]:
+# In[11]:
 
 
 hpc = False
@@ -41,18 +41,17 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
-# In[35]:
+# In[18]:
 
 
 lr = 0.0002
 n_epochs = 1
 batch_size = 128
-n_cpu = 4 if hpc else 0
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
-print(hpc, device, n_epochs, n_cpu)
+print(hpc, device, n_epochs)
 
 
-# In[36]:
+# In[13]:
 
 
 if (hpc):
@@ -62,9 +61,9 @@ if (hpc):
 
     df_train = pd.read_csv(labels_path_train)[:-1]
 else:
-    labels_path_train = 'data/train/labels/labels.csv'
-    labels_path_test = 'data/test/ids.csv'
-    img_dir = 'data'
+    labels_path_train = '../../data/train/labels/labels.csv'
+    labels_path_test = '../../data/test/ids.csv'
+    img_dir = '../../data'
 
     df_train = pd.read_csv(labels_path_train)
 
@@ -75,7 +74,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[37]:
+# In[14]:
 
 
 def parse_labels(df):
@@ -135,15 +134,35 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[39]:
+# In[15]:
 
 
+# default transform:
 transform = transforms.Compose([
     transforms.Lambda(lambda image: image.convert('RGB')),
     transforms.Resize((256, 256)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
 ])
+
+# transform with random flipping and cropping:
+# transform = transforms.Compose([
+#     transforms.Lambda(lambda image: image.convert('RGB')),
+#     transforms.Resize((300, 300)),
+#     transforms.ToTensor(),
+#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+#     transforms.RandomHorizontalFlip(),
+#     transforms.RandomCrop((256, 256))
+# ])
+
+# transform with Gaussian blur:
+# transform = transforms.Compose([
+#     transforms.Lambda(lambda image: image.convert('RGB')),
+#     transforms.Resize((256, 256)),
+#     transforms.ToTensor(),
+#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+#     transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))
+# ])
 
 training_data = TrainImageDataset(labels_path_train, img_dir, transform=transform)
 test_data = TestImageDataset(labels_path_test, img_dir, transform=transform)
@@ -152,23 +171,22 @@ train_size = int(0.8 * len(training_data))
 val_size = len(training_data) - train_size
 training_data, val_data = torch.utils.data.random_split(training_data, [train_size, val_size])
 
-train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True, num_workers=max(0, n_cpu-1))
+train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
 val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[28]:
+# In[16]:
 
 
 model = ResNet50(3)
-model = nn.DataParallel(model)
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[29]:
+# In[17]:
 
 
 # store metrics
@@ -177,8 +195,6 @@ validation_loss_history = np.zeros(n_epochs)
 
 for epoch in range(n_epochs):
     print(f'Epoch {epoch+1}/{n_epochs}:')
-    train_total = 0
-    train_correct = 0
     # train
     model.train()
     for i, data in enumerate(train_dataloader):
@@ -214,7 +230,7 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[10]:
+# In[ ]:
 
 
 # get predictions on test set
@@ -234,15 +250,19 @@ df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
 df_output.head()
 
 
-# In[16]:
+# In[12]:
 
 
 if (hpc):
     output_dir = '/groups/CS156b/2024/BroadBahnMi/predictions'
 else:
-    output_dir = 'predictions'
+    output_dir = '../../predictions'
 
-filename = '_'.join(pathology.split())
+from datetime import datetime 
+time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+filename = '_'.join(pathology.split()) + '_' + time
+filename = filename.replace(' ', '_')
 full_path = os.path.join(output_dir, f'preds_{filename}.csv')
 df_output.to_csv(full_path, index=False)
 
