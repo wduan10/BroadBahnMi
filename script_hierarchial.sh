@@ -18,4 +18,4 @@ source /home/mbanik/my_venv/bin/activate
 
 cd /central/groups/CS156b/2024/BroadBahnMi/
 
-python hierarchical_cluster.py
+python fuckit.py
