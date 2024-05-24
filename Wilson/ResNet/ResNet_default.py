@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[14]:
+# In[9]:
 
 
 print('Importing')
@@ -21,18 +21,18 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 import numpy as np
-from Wilson.ResNet.ResNet import ResNet50
+from ResNet import ResNet50
 from PIL import Image
 print('Done importing')
 
 
-# In[24]:
+# In[10]:
 
 
 pathology = 'Enlarged Cardiomediastinum'
 
 
-# In[16]:
+# In[11]:
 
 
 hpc = False
@@ -41,17 +41,17 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
-# In[17]:
+# In[18]:
 
 
 lr = 0.0002
-n_epochs = 20
+n_epochs = 1
 batch_size = 128
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs)
 
 
-# In[18]:
+# In[13]:
 
 
 if (hpc):
@@ -61,9 +61,9 @@ if (hpc):
 
     df_train = pd.read_csv(labels_path_train)[:-1]
 else:
-    labels_path_train = 'data/train/labels/labels.csv'
-    labels_path_test = 'data/test/ids.csv'
-    img_dir = 'data'
+    labels_path_train = '../../data/train/labels/labels.csv'
+    labels_path_test = '../../data/test/ids.csv'
+    img_dir = '../../data'
 
     df_train = pd.read_csv(labels_path_train)
 
@@ -74,7 +74,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[19]:
+# In[14]:
 
 
 def parse_labels(df):
@@ -134,16 +134,16 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[20]:
+# In[15]:
 
 
 # default transform:
-# transform = transforms.Compose([
-#     transforms.Lambda(lambda image: image.convert('RGB')),
-#     transforms.Resize((256, 256)),
-#     transforms.ToTensor(),
-#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-# ])
+transform = transforms.Compose([
+    transforms.Lambda(lambda image: image.convert('RGB')),
+    transforms.Resize((256, 256)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+])
 
 # transform with random flipping and cropping:
 # transform = transforms.Compose([
@@ -156,13 +156,13 @@ class TestImageDataset(Dataset):
 # ])
 
 # transform with Gaussian blur:
-transform = transforms.Compose([
-    transforms.Lambda(lambda image: image.convert('RGB')),
-    transforms.Resize((256, 256)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-    transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))
-])
+# transform = transforms.Compose([
+#     transforms.Lambda(lambda image: image.convert('RGB')),
+#     transforms.Resize((256, 256)),
+#     transforms.ToTensor(),
+#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+#     transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))
+# ])
 
 training_data = TrainImageDataset(labels_path_train, img_dir, transform=transform)
 test_data = TestImageDataset(labels_path_test, img_dir, transform=transform)
@@ -176,7 +176,7 @@ val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[21]:
+# In[16]:
 
 
 model = ResNet50(3)
@@ -186,7 +186,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[22]:
+# In[17]:
 
 
 # store metrics
@@ -230,7 +230,7 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[23]:
+# In[ ]:
 
 
 # get predictions on test set
@@ -250,13 +250,13 @@ df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
 df_output.head()
 
 
-# In[29]:
+# In[12]:
 
 
 if (hpc):
     output_dir = '/groups/CS156b/2024/BroadBahnMi/predictions'
 else:
-    output_dir = 'predictions'
+    output_dir = '../../predictions'
 
 from datetime import datetime 
 time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
