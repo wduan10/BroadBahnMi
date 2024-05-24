@@ -109,11 +109,12 @@ class TestImageDataset(Dataset):
     def __getitem__(self, idx):
         row = self.img_labels.iloc[idx]
         img_path = os.path.join(self.img_dir, row['Path'])
+        img_id = row['Path']
         image = Image.open(img_path).convert('RGB')
 
         if self.transform:
             image = self.transform(image)
-        return image
+        return image, img_id
 
 
 # In[3]:
@@ -142,7 +143,8 @@ test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 # In[5]
 features = []
-for images in test_dataloader:
+ids = []
+for images, image_ids in test_dataloader:
     images = images.to(device)
     with torch.no_grad():
         outputs = resnet(images)
@@ -151,9 +153,10 @@ for images in test_dataloader:
     if outputs.numel() == 0:
         print("Warning: No data in outputs.")
     features.extend(outputs.cpu().numpy())
+    ids.extend(image_ids)
 
 print("Collected features from", len(features), "images.")
-
+"""
 if features:
     features = [output.flatten() for output in features]
     features = np.vstack(features)
@@ -167,3 +170,35 @@ if features:
         plt.xlabel('Sample index')
         plt.ylabel('Distance')
         plt.show()
+
+"""
+
+features_array = np.array(features)
+linkage_matrix = linkage(features_array, method='ward')
+
+# Example: Analyzing cluster results
+# For a given linkage matrix and a cutoff to define clusters:
+from scipy.cluster.hierarchy import fcluster
+cutoff = 15  # Define your own cutoff based on dendrogram
+cluster_labels = fcluster(linkage_matrix, cutoff, criterion='distance')
+
+# Map cluster labels back to image IDs
+clustered_data = list(zip(ids, cluster_labels))
+print(clustered_data)
+
+
+def load_thumbnail(image_id):
+    img_path = os.path.join(img_dir, image_id)  # Modify according to your path structure
+    return plt.imread(img_path)
+
+# Create a figure and axes
+fig, ax = plt.subplots()
+colors = plt.cm.viridis(np.linspace(0, 1, max(cluster_labels) + 1))  # Color map for clusters
+
+for image_id, cluster_label in clustered_data:
+    img = load_thumbnail(image_id)
+    ax.imshow(img, extent=(x, x + 1, y, y + 1))  # x, y should be calculated based on cluster_label and some layout logic
+    x += 1  # Increment x for layout purposes
+
+ax.set_title('Image Thumbnails Grouped by Cluster')
+plt.show()
