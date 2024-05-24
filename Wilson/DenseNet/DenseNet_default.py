@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[33]:
+# In[1]:
 
 
 print('Importing')
@@ -26,13 +26,13 @@ from PIL import Image
 print('Done importing')
 
 
-# In[22]:
+# In[2]:
 
 
 pathology = 'Enlarged Cardiomediastinum'
 
 
-# In[23]:
+# In[3]:
 
 
 hpc = False
@@ -41,17 +41,18 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
-# In[24]:
+# In[4]:
 
 
 lr = 0.0002
 n_epochs = 1
+n_cpu = 4 if hpc else 0
 batch_size = 128
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
-print(hpc, device, n_epochs)
+print(hpc, device, n_epochs, n_cpu)
 
 
-# In[25]:
+# In[5]:
 
 
 if (hpc):
@@ -61,9 +62,9 @@ if (hpc):
 
     df_train = pd.read_csv(labels_path_train)[:-1]
 else:
-    labels_path_train = 'data/train/labels/labels.csv'
-    labels_path_test = 'data/test/ids.csv'
-    img_dir = 'data'
+    labels_path_train = '../../data/train/labels/labels.csv'
+    labels_path_test = '../../data/test/ids.csv'
+    img_dir = '../../data'
 
     df_train = pd.read_csv(labels_path_train)
 
@@ -74,7 +75,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[26]:
+# In[9]:
 
 
 def parse_labels(df):
@@ -134,7 +135,7 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[27]:
+# In[10]:
 
 
 # default transform:
@@ -171,22 +172,23 @@ train_size = int(0.8 * len(training_data))
 val_size = len(training_data) - train_size
 training_data, val_data = torch.utils.data.random_split(training_data, [train_size, val_size])
 
-train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
-val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
+train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
+val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[30]:
+# In[11]:
 
 
 model = DenseNet(channels=3, growth_rate=16, num_classes=3)
+model = nn.DataParallel(model)
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[29]:
+# In[12]:
 
 
 # store metrics
@@ -252,15 +254,19 @@ df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
 df_output.head()
 
 
-# In[16]:
+# In[14]:
 
 
 if (hpc):
     output_dir = '/groups/CS156b/2024/BroadBahnMi/predictions'
 else:
-    output_dir = 'predictions'
+    output_dir = '../../predictions'
 
-filename = '_'.join(pathology.split())
+from datetime import datetime 
+time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+filename = '_'.join(pathology.split()) + '_' + time
+filename = filename.replace(' ', '_')
 full_path = os.path.join(output_dir, f'preds_{filename}.csv')
 df_output.to_csv(full_path, index=False)
 
