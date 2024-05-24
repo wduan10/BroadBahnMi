@@ -1,7 +1,7 @@
-print('Importing')
 import os
 import sys
 import torch
+import datetime
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
@@ -19,15 +19,10 @@ from torch.utils.data import DataLoader
 import numpy as np
 from ResNet import ResNet50
 from PIL import Image
-print('Done importing')
 
 pathology = 'Enlarged Cardiomediastinum'
 
-hpc = False
-print(sys.argv)
-if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
-    hpc = True
-
+hpc = True 
 lr = 0.0002
 n_epochs = 1
 batch_size = 128
@@ -196,11 +191,11 @@ with torch.no_grad():
 df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
 df_output.head()
 
-if (hpc):
-    output_dir = '/groups/CS156b/2024/BroadBahnMi/predictions'
-else:
-    output_dir = 'predictions'
-
-filename = '_'.join(pathology.split())
-full_path = os.path.join(output_dir, f'preds_{filename}.csv')
-df_output.to_csv(full_path, index=False)
+output_dir = 'predictions'   
+now = datetime.datetime.now()
+timestamp_str = now.strftime("%m-%d_%H-%M")
+filename = f"{pathology}_preds_{timestamp_str}.csv" 
+os.makedirs(output_dir, exist_ok=True)
+full_path = os.path.join(output_dir, filename) 
+df_output.to_csv(full_path, index=False) 
+print(f"Predictions saved to {full_path}")
