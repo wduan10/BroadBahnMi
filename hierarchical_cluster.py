@@ -187,18 +187,41 @@ clustered_data = list(zip(ids, cluster_labels))
 print(clustered_data)
 
 
-def load_thumbnail(image_id):
-    img_path = os.path.join(img_dir, image_id)  # Modify according to your path structure
-    return plt.imread(img_path)
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 
-# Create a figure and axes
-fig, ax = plt.subplots()
-colors = plt.cm.viridis(np.linspace(0, 1, max(cluster_labels) + 1))  # Color map for clusters
+# Function to load an image
+def load_image(image_id):
+    img_path = os.path.join(img_dir, image_id)  # Adjust this path as needed
+    return mpimg.imread(img_path)
 
+# Assuming clustered_data is sorted or will be sorted by cluster labels
+clustered_data.sort(key=lambda x: x[1])  # Sort by cluster label for better organization
+
+# Determine the layout: find the max number of elements in any cluster
+from collections import defaultdict
+cluster_sizes = defaultdict(int)
+for _, cluster_label in clustered_data:
+    cluster_sizes[cluster_label] += 1
+max_images_in_cluster = max(cluster_sizes.values())
+
+# Create a figure with subplots
+fig, axes = plt.subplots(nrows=max(cluster_sizes.keys()) + 1, ncols=max_images_in_cluster, figsize=(15, 10))
+fig.suptitle('Images Grouped by Cluster')
+
+# Hide all axes initially
+for ax_row in axes:
+    for ax in ax_row:
+        ax.axis('off')
+
+# Plotting images in their respective cluster rows
 for image_id, cluster_label in clustered_data:
-    img = load_thumbnail(image_id)
-    ax.imshow(img, extent=(x, x + 1, y, y + 1))  # x, y should be calculated based on cluster_label and some layout logic
-    x += 1  # Increment x for layout purposes
+    col_index = cluster_sizes[cluster_label] % max_images_in_cluster  # Column index for the image
+    ax = axes[cluster_label][col_index]
+    img = load_image(image_id)
+    ax.imshow(img)
+    ax.axis('on')  # Only turn on the axes that are used
+    cluster_sizes[cluster_label] += 1
 
-ax.set_title('Image Thumbnails Grouped by Cluster')
+plt.tight_layout()
 plt.show()
