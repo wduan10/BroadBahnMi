@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=Test
+#SBATCH --job-name=LivsModel
 #SBATCH --output=/home/oxu/BroadBahnMi/out/%j.out
 #SBATCH --error=/home/oxu/BroadBahnMi/out/%j.err
 #SBATCH -A CS156b
@@ -16,6 +16,7 @@
 
 source /home/oxu/my_venv/bin/activate
 
-cd /home/oxu/BroadBahnMi
+# cd /home/oxu/BroadBahnMi
+cd /central/groups/CS156b/2024/BroadBahnMi/
 
 python CNN_single_copy.py
