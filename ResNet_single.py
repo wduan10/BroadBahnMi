@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[32]:
+# In[2]:
 
 
 print('Importing')
@@ -26,13 +26,13 @@ from PIL import Image
 print('Done importing')
 
 
-# In[33]:
+# In[3]:
 
 
 pathology = 'Enlarged Cardiomediastinum'
 
 
-# In[34]:
+# In[4]:
 
 
 hpc = False
@@ -41,7 +41,7 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
 
 
-# In[35]:
+# In[5]:
 
 
 lr = 0.0002
@@ -52,7 +52,7 @@ device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs, n_cpu)
 
 
-# In[36]:
+# In[6]:
 
 
 if (hpc):
@@ -75,7 +75,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[37]:
+# In[7]:
 
 
 def parse_labels(df):
@@ -135,14 +135,34 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[39]:
+# In[8]:
 
 
+# default transform:
+# transform = transforms.Compose([
+#     transforms.Lambda(lambda image: image.convert('RGB')),
+#     transforms.Resize((256, 256)),
+#     transforms.ToTensor(),
+#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+# ])
+
+# transform with random flipping and cropping:
+# transform = transforms.Compose([
+#     transforms.Lambda(lambda image: image.convert('RGB')),
+#     transforms.Resize((300, 300)),
+#     transforms.ToTensor(),
+#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+#     transforms.RandomHorizontalFlip(),
+#     transforms.RandomCrop((256, 256))
+# ])
+
+# transform with Gaussian blur:
 transform = transforms.Compose([
     transforms.Lambda(lambda image: image.convert('RGB')),
     transforms.Resize((256, 256)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+    transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))
 ])
 
 training_data = TrainImageDataset(labels_path_train, img_dir, transform=transform)
@@ -152,12 +172,13 @@ train_size = int(0.8 * len(training_data))
 val_size = len(training_data) - train_size
 training_data, val_data = torch.utils.data.random_split(training_data, [train_size, val_size])
 
-train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True, num_workers=max(0, n_cpu-1))
+# train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True, num_workers=max(0, n_cpu-1))
+train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
 val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[28]:
+# In[9]:
 
 
 model = ResNet50(3)
@@ -168,7 +189,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[29]:
+# In[12]:
 
 
 # store metrics
@@ -177,8 +198,6 @@ validation_loss_history = np.zeros(n_epochs)
 
 for epoch in range(n_epochs):
     print(f'Epoch {epoch+1}/{n_epochs}:')
-    train_total = 0
-    train_correct = 0
     # train
     model.train()
     for i, data in enumerate(train_dataloader):
@@ -214,7 +233,7 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[10]:
+# In[13]:
 
 
 # get predictions on test set
