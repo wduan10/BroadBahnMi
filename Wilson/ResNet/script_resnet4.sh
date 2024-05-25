@@ -18,4 +18,4 @@ source /home/wduan/venvs/CS156b/bin/activate
 
 cd /central/groups/CS156b/2024/BroadBahnMi/Wilson/ResNet
 
-python ResNet_default.py hpc 2
+python ResNet_default.py hpc 4
