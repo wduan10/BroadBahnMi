@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[3]:
 
 
 print('Importing')
@@ -26,33 +26,36 @@ from PIL import Image
 print('Done importing')
 
 
-# In[2]:
+# In[4]:
 
 
 pathology = 'Enlarged Cardiomediastinum'
 
 
-# In[3]:
+# In[5]:
 
 
 hpc = False
+mode = 1
 print(sys.argv)
 if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
+    if (len(sys.argv) > 2):
+        mode = int(sys.argv[2])
 
 
-# In[4]:
+# In[6]:
 
 
 lr = 0.0002
-n_epochs = 1
+n_epochs = 20
 n_cpu = 4 if hpc else 0
 batch_size = 128
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs, n_cpu)
 
 
-# In[5]:
+# In[7]:
 
 
 if (hpc):
@@ -75,7 +78,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[9]:
+# In[8]:
 
 
 def parse_labels(df):
@@ -135,35 +138,41 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[10]:
+# In[9]:
 
 
-# default transform:
-transform = transforms.Compose([
-    transforms.Lambda(lambda image: image.convert('RGB')),
-    transforms.Resize((256, 256)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-])
-
-# transform with random flipping and cropping:
-# transform = transforms.Compose([
-#     transforms.Lambda(lambda image: image.convert('RGB')),
-#     transforms.Resize((300, 300)),
-#     transforms.ToTensor(),
-#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-#     transforms.RandomHorizontalFlip(),
-#     transforms.RandomCrop((256, 256))
-# ])
-
-# transform with Gaussian blur:
-# transform = transforms.Compose([
-#     transforms.Lambda(lambda image: image.convert('RGB')),
-#     transforms.Resize((256, 256)),
-#     transforms.ToTensor(),
-#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-#     transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))
-# ])
+if (mode == 3):
+    # transform with random flipping/cropping and Gaussian blur (size 3 kernel):
+    transform = transforms.Compose([
+        transforms.Lambda(lambda image: image.convert('RGB')),
+        transforms.Resize((256, 256)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomCrop((256, 256)),
+        transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))
+    ])
+elif (mode == 4):
+    # transform with random flipping/cropping and Gaussian blur (size 5 kernel):
+    transform = transforms.Compose([
+        transforms.Lambda(lambda image: image.convert('RGB')),
+        transforms.Resize((256, 256)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomCrop((256, 256)),
+        transforms.GaussianBlur(kernel_size=(5, 5), sigma=(0.1, 2.0))
+    ])
+else:
+    # transform with random flipping and cropping:
+    transform = transforms.Compose([
+        transforms.Lambda(lambda image: image.convert('RGB')),
+        transforms.Resize((300, 300)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomCrop((256, 256))
+    ])
 
 training_data = TrainImageDataset(labels_path_train, img_dir, transform=transform)
 test_data = TestImageDataset(labels_path_test, img_dir, transform=transform)
@@ -177,7 +186,7 @@ val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True, num_w
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[11]:
+# In[10]:
 
 
 model = DenseNet(channels=3, growth_rate=16, num_classes=3)
@@ -188,7 +197,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[12]:
+# In[11]:
 
 
 # store metrics
@@ -206,8 +215,6 @@ for epoch in range(n_epochs):
         # forward pass
         output = model(images)
         # calculate categorical cross entropy loss
-        print('output', output.shape)
-        print('label', labels.shape)
         loss = criterion(output, labels)
         # backward pass
         loss.backward()
@@ -234,7 +241,7 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[13]:
+# In[81]:
 
 
 # get predictions on test set
@@ -246,7 +253,10 @@ with torch.no_grad():
         images, ids = images.to(device), ids.to(device)
         
         output = np.array(model(images).cpu())
-        output = np.argmax(output, axis=1) - 1
+        if (mode == 2):
+            output = (output[:, 0] + output[:, 2]) / 2
+        else:
+            output = np.argmax(output, axis=1) - 1
         for preds, id in zip(output, ids):
             rows_list.append([int(id)] + [preds])
 
@@ -254,7 +264,7 @@ df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
 df_output.head()
 
 
-# In[14]:
+# In[29]:
 
 
 if (hpc):
