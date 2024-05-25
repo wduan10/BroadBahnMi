@@ -252,11 +252,12 @@ with torch.no_grad():
         images, ids = data
         images, ids = images.to(device), ids.to(device)
         
-        output = np.array(model(images).cpu())
+        output = model(images).cpu()
         if (mode == 2):
-            output = (output[:, 0] + output[:, 2]) / 2
+            output = nn.functional.softmax(output)
+            output = (-1 * output[:, 0] + output[:, 2]) / 2
         else:
-            output = np.argmax(output, axis=1) - 1
+            output = torch.argmax(output, axis=1) - 1
         for preds, id in zip(output, ids):
             rows_list.append([int(id)] + [preds])
 

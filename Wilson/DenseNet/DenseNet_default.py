@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[12]:
 
 
 print('Importing')
@@ -26,17 +26,17 @@ from PIL import Image
 print('Done importing')
 
 
-# In[4]:
+# In[13]:
 
 
 pathology = 'Enlarged Cardiomediastinum'
 
 
-# In[5]:
+# In[18]:
 
 
 hpc = False
-mode = 1
+mode = 2
 print(sys.argv)
 if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
@@ -44,7 +44,7 @@ if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
         mode = int(sys.argv[2])
 
 
-# In[6]:
+# In[19]:
 
 
 lr = 0.0002
@@ -55,7 +55,7 @@ device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs, n_cpu)
 
 
-# In[7]:
+# In[20]:
 
 
 if (hpc):
@@ -78,7 +78,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[8]:
+# In[21]:
 
 
 def parse_labels(df):
@@ -138,7 +138,7 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[9]:
+# In[22]:
 
 
 if (mode == 3):
@@ -186,7 +186,7 @@ val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True, num_w
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[10]:
+# In[23]:
 
 
 model = DenseNet(channels=3, growth_rate=16, num_classes=3)
@@ -197,7 +197,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[11]:
+# In[24]:
 
 
 # store metrics
@@ -241,7 +241,7 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[81]:
+# In[35]:
 
 
 # get predictions on test set
@@ -252,11 +252,12 @@ with torch.no_grad():
         images, ids = data
         images, ids = images.to(device), ids.to(device)
         
-        output = np.array(model(images).cpu())
+        output = model(images).cpu()
         if (mode == 2):
-            output = (output[:, 0] + output[:, 2]) / 2
+            output = nn.functional.softmax(output)
+            output = (-1 * output[:, 0] + output[:, 2]) / 2
         else:
-            output = np.argmax(output, axis=1) - 1
+            output = torch.argmax(output, axis=1) - 1
         for preds, id in zip(output, ids):
             rows_list.append([int(id)] + [preds])
 
