@@ -4,7 +4,7 @@
 #SBATCH --output=/central/groups/CS156b/2024/BroadBahnMi/%j.out
 #SBATCH --error=/central/groups/CS156b/2024/BroadBahnMi/%j.err
 #SBATCH -A CS156b
-#SBATCH --time=14:00:00
+#SBATCH --time=12:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
@@ -18,4 +18,4 @@ source /home/wduan/venvs/CS156b/bin/activate
 
 cd /central/groups/CS156b/2024/BroadBahnMi/Wilson/ResNet
 
-python ResNet_default.py hpc 1
+python ResNet_default.py hpc 5
