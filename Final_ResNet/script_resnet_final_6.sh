@@ -16,6 +16,6 @@
 
 source /home/wduan/venvs/CS156b/bin/activate
 
-cd /central/groups/CS156b/2024/BroadBahnMi/Final
+cd /central/groups/CS156b/2024/BroadBahnMi/Final_ResNet
 
 python ResNet_final.py hpc 6
