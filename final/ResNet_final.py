@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[29]:
 
 
 print('Importing')
@@ -26,34 +26,37 @@ from PIL import Image
 print('Done importing')
 
 
-# In[10]:
+# In[43]:
 
 
-pathology = 'Enlarged Cardiomediastinum'
-
-
-# In[11]:
-
-
+pathologies = ['No Finding', 'Enlarged Cardiomediastinum', 'Cardiomegaly',
+               'Lung Opacity', 'Pneumonia', 'Pleural Effusion', 'Pleural Other',
+               'Fracture', 'Support Devices']
 hpc = False
+mode = 1
 print(sys.argv)
 if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
     if (len(sys.argv) > 2):
-        pathology = sys.argv[2]
+        mode = int(sys.argv[2])
+
+pathology = pathologies[mode]
+print('pathology:', pathology)
 
 
-# In[18]:
+# In[44]:
 
 
 lr = 0.0002
-n_epochs = 1
+n_epochs = 60
+n_cpu = 4 if hpc else 0
 batch_size = 128
+img_size = 256
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
-print(hpc, device, n_epochs)
+print(hpc, device, n_epochs, n_cpu, img_size)
 
 
-# In[13]:
+# In[45]:
 
 
 if (hpc):
@@ -76,7 +79,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[14]:
+# In[46]:
 
 
 def parse_labels(df):
@@ -136,35 +139,19 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[15]:
+# In[47]:
 
-
-# default transform:
-transform = transforms.Compose([
-    transforms.Lambda(lambda image: image.convert('RGB')),
-    transforms.Resize((256, 256)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-])
 
 # transform with random flipping and cropping:
-# transform = transforms.Compose([
-#     transforms.Lambda(lambda image: image.convert('RGB')),
-#     transforms.Resize((300, 300)),
-#     transforms.ToTensor(),
-#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-#     transforms.RandomHorizontalFlip(),
-#     transforms.RandomCrop((256, 256))
-# ])
-
-# transform with Gaussian blur:
-# transform = transforms.Compose([
-#     transforms.Lambda(lambda image: image.convert('RGB')),
-#     transforms.Resize((256, 256)),
-#     transforms.ToTensor(),
-#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-#     transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))
-# ])
+transform = transforms.Compose([
+    transforms.Lambda(lambda image: image.convert('RGB')),
+    transforms.Resize((300, 300)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomCrop((256, 256)),
+    # transforms.GaussianBlur(kernel_size=(5, 5), sigma=(0.1, 2.0))
+])
 
 training_data = TrainImageDataset(labels_path_train, img_dir, transform=transform)
 test_data = TestImageDataset(labels_path_test, img_dir, transform=transform)
@@ -173,22 +160,23 @@ train_size = int(0.8 * len(training_data))
 val_size = len(training_data) - train_size
 training_data, val_data = torch.utils.data.random_split(training_data, [train_size, val_size])
 
-train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
-val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
+train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
+val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[16]:
+# In[48]:
 
 
 model = ResNet50(3)
+model = nn.DataParallel(model)
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[17]:
+# In[49]:
 
 
 # store metrics
@@ -232,7 +220,7 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[ ]:
+# In[50]:
 
 
 # get predictions on test set
@@ -243,16 +231,17 @@ with torch.no_grad():
         images, ids = data
         images, ids = images.to(device), ids.to(device)
         
-        output = np.array(model(images).cpu())
-        output = np.argmax(output, axis=1) - 1
+        output = model(images).cpu()
+        output = nn.functional.softmax(output)
+        output = (-1 * output[:, 0] + output[:, 2]) / 2
         for preds, id in zip(output, ids):
-            rows_list.append([int(id)] + [preds])
+            rows_list.append([int(id)] + [float(preds)])
 
 df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
 df_output.head()
 
 
-# In[12]:
+# In[29]:
 
 
 if (hpc):
