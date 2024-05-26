@@ -16,6 +16,6 @@
 
 source /home/wduan/venvs/CS156b/bin/activate
 
-cd /central/groups/CS156b/2024/BroadBahnMi/Wilson/ResNet
+cd /central/groups/CS156b/2024/BroadBahnMi/Wilson2/ResNet
 
 python ResNet_default.py hpc 5

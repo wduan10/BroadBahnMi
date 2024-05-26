@@ -16,6 +16,6 @@
 
 source /home/wduan/venvs/CS156b/bin/activate
 
-cd /central/groups/CS156b/2024/BroadBahnMi/Wilson/DenseNet
+cd /central/groups/CS156b/2024/BroadBahnMi/Wilson2/DenseNet
 
 python DenseNet_default.py hpc 5
