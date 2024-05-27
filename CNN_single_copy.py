@@ -1,3 +1,4 @@
+print('Importing')
 import os
 import sys
 import torch
@@ -18,6 +19,7 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 import numpy as np
 from PIL import Image
+print('Done importing')
 
 # Setup check
 hpc = False
@@ -204,5 +206,5 @@ for file in os.listdir(output_dir):
     if (file[:5] == 'preds'):
         number = max(number, int(file[6:-4]) + 1)
 
-full_path = os.path.join(output_dir, f'{pathology}_preds_{number}.csv')
+full_path = os.path.join(output_dir, f'preds_{number}.csv')
 df_output.to_csv(full_path, index=False)
