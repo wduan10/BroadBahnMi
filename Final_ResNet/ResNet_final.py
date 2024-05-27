@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[17]:
 
 
 print('Importing')
@@ -23,10 +23,18 @@ from torch.utils.data import DataLoader
 import numpy as np
 from ResNet import ResNet50
 from PIL import Image
+from datetime import datetime 
 print('Done importing')
 
 
-# In[3]:
+# In[18]:
+
+
+start_time = datetime.now()
+print(start_time)
+
+
+# In[19]:
 
 
 pathologies = ['No Finding', 'Enlarged Cardiomediastinum', 'Cardiomegaly',
@@ -44,7 +52,7 @@ pathology = pathologies[mode]
 print('pathology:', pathology)
 
 
-# In[4]:
+# In[20]:
 
 
 lr = 0.0002
@@ -56,7 +64,7 @@ device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs, n_cpu, img_size)
 
 
-# In[8]:
+# In[21]:
 
 
 if (hpc):
@@ -79,7 +87,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[9]:
+# In[22]:
 
 
 def parse_labels(df):
@@ -139,7 +147,7 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[10]:
+# In[23]:
 
 
 # transform with random flipping and cropping:
@@ -165,7 +173,7 @@ val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True, num_w
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[11]:
+# In[24]:
 
 
 model = ResNet50(3)
@@ -176,12 +184,13 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[12]:
+# In[27]:
 
 
 # store metrics
 training_loss_history = np.zeros(n_epochs)
 validation_loss_history = np.zeros(n_epochs)
+early_stop = False
 
 for epoch in range(n_epochs):
     print(f'Epoch {epoch+1}/{n_epochs}:')
@@ -201,9 +210,21 @@ for epoch in range(n_epochs):
 
         # track training loss
         training_loss_history[epoch] += loss.item()
+
+        # check if stop
+        current_time = datetime.now()
+        time_difference = current_time - start_time
+        duration_in_s = time_difference.total_seconds() 
+        hours = divmod(duration_in_s, 3600)[0]
+        if (hours > 22):
+            early_stop = True
+            break
     
     training_loss_history[epoch] /= len(train_dataloader)
     print(f'Training Loss: {training_loss_history[epoch]:0.4f}')
+
+    if (early_stop):
+        break
 
     # validate
     with torch.no_grad():
@@ -249,7 +270,6 @@ if (hpc):
 else:
     output_dir = '../predictions'
 
-from datetime import datetime 
 time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
 filename = '_'.join(pathology.split()) + '_' + time
