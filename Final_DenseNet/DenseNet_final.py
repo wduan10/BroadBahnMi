@@ -21,7 +21,7 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 import numpy as np
-from ResNet import ResNet50
+from DenseNet_model import DenseNet
 from PIL import Image
 print('Done importing')
 
@@ -168,7 +168,7 @@ test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 # In[48]:
 
 
-model = ResNet50(3)
+model = DenseNet(channels=3, growth_rate=16, num_classes=3)
 model = nn.DataParallel(model)
 model = model.to(device)
 
