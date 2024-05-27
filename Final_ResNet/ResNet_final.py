@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[29]:
+# In[2]:
 
 
 print('Importing')
@@ -26,7 +26,7 @@ from PIL import Image
 print('Done importing')
 
 
-# In[43]:
+# In[3]:
 
 
 pathologies = ['No Finding', 'Enlarged Cardiomediastinum', 'Cardiomegaly',
@@ -44,7 +44,7 @@ pathology = pathologies[mode]
 print('pathology:', pathology)
 
 
-# In[44]:
+# In[4]:
 
 
 lr = 0.0002
@@ -56,7 +56,7 @@ device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs, n_cpu, img_size)
 
 
-# In[45]:
+# In[8]:
 
 
 if (hpc):
@@ -66,9 +66,9 @@ if (hpc):
 
     df_train = pd.read_csv(labels_path_train)[:-1]
 else:
-    labels_path_train = '../../data/train/labels/labels.csv'
-    labels_path_test = '../../data/test/ids.csv'
-    img_dir = '../../data'
+    labels_path_train = '../data/train/labels/labels.csv'
+    labels_path_test = '../data/test/ids.csv'
+    img_dir = '../data'
 
     df_train = pd.read_csv(labels_path_train)
 
@@ -79,7 +79,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[46]:
+# In[9]:
 
 
 def parse_labels(df):
@@ -139,7 +139,7 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[47]:
+# In[10]:
 
 
 # transform with random flipping and cropping:
@@ -165,7 +165,7 @@ val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True, num_w
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[48]:
+# In[11]:
 
 
 model = ResNet50(3)
@@ -176,7 +176,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[49]:
+# In[12]:
 
 
 # store metrics
@@ -220,7 +220,7 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[50]:
+# In[13]:
 
 
 # get predictions on test set
@@ -247,7 +247,7 @@ df_output.head()
 if (hpc):
     output_dir = '/groups/CS156b/2024/BroadBahnMi/predictions'
 else:
-    output_dir = '../../predictions'
+    output_dir = '../predictions'
 
 from datetime import datetime 
 time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
