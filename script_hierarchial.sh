@@ -16,6 +16,6 @@
 
 source /home/wduan/venvs/CS156b/bin/activate
 
-cd /home/mbanik/BroadBahnMi/
+cd /central/home/mbanik/BroadBahnMi/
 
 python hierarchy_clustering.py
