@@ -216,7 +216,7 @@ for epoch in range(n_epochs):
         time_difference = current_time - start_time
         duration_in_s = time_difference.total_seconds() 
         hours = divmod(duration_in_s, 3600)[0]
-        if (hours > 18):
+        if (hours > 12):
             early_stop = True
             break
     
