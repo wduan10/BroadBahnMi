@@ -18,4 +18,4 @@ source /home/wduan/venvs/CS156b/bin/activate
 
 cd /home/mbanik/BroadBahnMi/
 
-python fuckit.py
+python hierarchy_clustering.py
