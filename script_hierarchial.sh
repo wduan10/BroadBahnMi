@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --job-name=Hierarchical
-#SBATCH --output=/central/groups/CS156b/2024/BroadBahnMi/%j.out
-#SBATCH --error=/central/groups/CS156b/2024/BroadBahnMi/%j.err
+#SBATCH --output=/home/mbanik/BroadBahnMi/%j.out
+#SBATCH --error=/home/mbanik/BroadBahnMi/%j.err
 #SBATCH -A CS156b
 #SBATCH --time=1:00:00
 #SBATCH --ntasks=1
@@ -16,6 +16,6 @@
 
 source /home/wduan/venvs/CS156b/bin/activate
 
-cd /home/mbanik/BroadBahnMi/
+cd /central/home/mbanik/BroadBahnMi/
 
 python hierarchy_clustering.py
