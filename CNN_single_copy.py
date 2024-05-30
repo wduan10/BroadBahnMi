@@ -26,10 +26,10 @@ hpc = False
 if len(sys.argv) > 1 and sys.argv[1] == 'hpc':
     hpc = True 
 
-pathology = 'Fracture'
+pathology = 'Pleural Effusion'
 
 lr = 0.0002
-n_epochs = 1
+n_epochs = 10
 batch_size = 128
 n_cpu = 4 if hpc else 0
 device = torch.device('cuda:0' if (torch.cuda.is_available()) else 'cpu')
