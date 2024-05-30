@@ -134,8 +134,6 @@ test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 # Model, using a transfer learning fine tuning approach
 model = models.densenet121(weights=DenseNet121_Weights.DEFAULT)
-model = nn.DataParallel(model)
-
 # Replace first convolutional layer to accept greyscale images
 model.features.conv0 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
@@ -148,6 +146,8 @@ model.classifier = nn.Sequential(nn.Linear(1024, 512),
                                  nn.Dropout(0.2),
                                  nn.Linear(512, 3),
                                  )
+
+model = nn.DataParallel(model)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
