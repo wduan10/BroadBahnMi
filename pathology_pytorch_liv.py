@@ -22,7 +22,7 @@ LEARNING_RATE = 0.0002
 HPC = True
 IMAGE_SIZE = 224
 NUM_CLASSES = 3
-PATHOLOGY =  "Pleural Effusion"
+PATHOLOGY =  "Fracture"
 
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(f"Device: {device}")
