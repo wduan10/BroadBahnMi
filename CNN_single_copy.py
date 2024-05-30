@@ -32,8 +32,8 @@ classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opa
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
 lr = 0.0002
-n_epochs = 20
-batch_size = 128
+n_epochs = 30
+batch_size = 256
 n_cpu = 4 if hpc else 0
 device = torch.device('cuda:0' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs, n_cpu)
@@ -128,8 +128,8 @@ train_size = int(0.8 * len(training_data))
 val_size = len(training_data) - train_size
 training_data, val_data = torch.utils.data.random_split(training_data, [train_size, val_size])
 
-train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
-val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
+train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
+val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 # Model, using a transfer learning fine tuning approach
