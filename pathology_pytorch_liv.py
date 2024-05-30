@@ -82,7 +82,9 @@ class PathologyDataset(Dataset):
 
 transform = transforms.Compose([
             transforms.ToTensor(),
+            transforms.GaussianBlur(kernel_size=(7, 7), sigma=(1,5)),
             transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
+            transforms.RandomCrop(IMAGE_SIZE),
             transforms.Normalize((0.5,), (0.5,))
         ])
 
