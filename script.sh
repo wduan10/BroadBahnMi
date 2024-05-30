@@ -14,10 +14,10 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --partition=gpu
 
-# source /home/oxu/my_venv/bin/activate
-source /home/wduan/venvs/CS156b/bin/activate
+source /home/oxu/my_venv/bin/activate
+# source /home/wduan/venvs/CS156b/bin/activate
 
-# cd /home/oxu/BroadBahnMi
-cd /central/groups/CS156b/2024/BroadBahnMi/
+cd /home/oxu/BroadBahnMi
+# cd /central/groups/CS156b/2024/BroadBahnMi/
 
 python CNN_single_copy.py hpc
