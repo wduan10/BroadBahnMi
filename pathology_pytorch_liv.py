@@ -16,15 +16,15 @@ from IPython.display import display
 classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
-NUM_EPOCHS = 15 
+NUM_EPOCHS = 20   
 BATCH_SIZE = 256
 LEARNING_RATE = 0.0002
 HPC = True
 IMAGE_SIZE = 224
 NUM_CLASSES = 3
-PATHOLOGY = "Support Devices"
+PATHOLOGY =  "Fracture"
 
-device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
+device = torch.device('cuda:0' if (torch.cuda.is_available()) else 'cpu')
 print(f"Device: {device}")
 
 if (HPC):

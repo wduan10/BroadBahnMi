@@ -26,14 +26,14 @@ hpc = False
 if len(sys.argv) > 1 and sys.argv[1] == 'hpc':
     hpc = True 
 
-pathology = "Lung Opacity"
+pathology = "Pleural Effusion"
 
 classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
 lr = 0.0002
-n_epochs = 20
-batch_size = 128
+n_epochs = 30
+batch_size = 256
 n_cpu = 4 if hpc else 0
 device = torch.device('cuda:0' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs, n_cpu)
@@ -128,14 +128,12 @@ train_size = int(0.8 * len(training_data))
 val_size = len(training_data) - train_size
 training_data, val_data = torch.utils.data.random_split(training_data, [train_size, val_size])
 
-train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
-val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
+train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
+val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 # Model, using a transfer learning fine tuning approach
 model = models.densenet121(weights=DenseNet121_Weights.DEFAULT)
-model = nn.DataParallel(model)
-
 # Replace first convolutional layer to accept greyscale images
 model.features.conv0 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
@@ -148,6 +146,8 @@ model.classifier = nn.Sequential(nn.Linear(1024, 512),
                                  nn.Dropout(0.2),
                                  nn.Linear(512, 3),
                                  )
+
+model = nn.DataParallel(model)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
