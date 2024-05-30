@@ -114,7 +114,7 @@ transform = transforms.Compose([
     # transforms.Lambda(lambda image: image.convert('RGB')),
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.GaussianBlur(kernel_size=5, sigma=(1.0, 2.0)), # moderate blur 
+    # transforms.GaussianBlur(kernel_size=5, sigma=(1.0, 2.0)), # moderate blur 
     transforms.Normalize((0.5,), (0.5,))
 ])
 
@@ -129,11 +129,22 @@ train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True
 val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
+# Model, using a transfer learning fine tuning approach
 model = models.densenet121(weights=DenseNet121_Weights.DEFAULT)
-model = nn.parallel.DistributedDataParallel(model)
+model = nn.DataParallel(model)
 
+# Replace first convolutional layer to accept greyscale images
 model.features.conv0 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
-model.to(device)
+
+for param in model.parameters():
+    # Freezes weights
+    param.requires_grad = False
+
+model.classifier = nn.Sequential(nn.Linear(1024, 512),
+                                 nn.ReLU(),
+                                 nn.Dropout(0.2),
+                                 nn.Linear(512, 3),
+                                 )
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
@@ -201,10 +212,11 @@ if (hpc):
 else:
     output_dir = 'predictions'
 
-number = 1
-for file in os.listdir(output_dir):
-    if (file[:5] == 'preds'):
-        number = max(number, int(file[6:-4]) + 1)
-
-full_path = os.path.join(output_dir, f'preds_{number}.csv')
-df_output.to_csv(full_path, index=False)
+output_dir = 'predictions'   
+now = datetime.datetime.now()
+timestamp_str = now.strftime("%m-%d_%H-%M")
+filename = f"{pathology}_preds_{timestamp_str}.csv" 
+os.makedirs(output_dir, exist_ok=True)
+full_path = os.path.join(output_dir, filename) 
+df_output.to_csv(full_path, index=False) 
+print(f"Predictions saved to {full_path}")
