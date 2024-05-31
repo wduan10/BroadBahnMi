@@ -32,7 +32,7 @@ classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opa
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
 lr = 0.0002
-n_epochs = 25
+n_epochs = 15
 batch_size = 256
 n_cpu = 4 if hpc else 0
 device = torch.device('cuda:0' if (torch.cuda.is_available()) else 'cpu')
