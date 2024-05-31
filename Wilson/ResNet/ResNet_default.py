@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[56]:
+# In[17]:
 
 
 print('Importing')
@@ -23,39 +23,48 @@ from torch.utils.data import DataLoader
 import numpy as np
 from ResNet import ResNet50
 from PIL import Image
+from datetime import datetime 
 print('Done importing')
 
 
-# In[57]:
+# In[18]:
 
 
-pathology = 'Enlarged Cardiomediastinum'
+start_time = datetime.now()
+print(start_time)
 
 
-# In[74]:
+# In[19]:
 
 
+pathologies = ['No Finding', 'Enlarged Cardiomediastinum', 'Cardiomegaly',
+               'Lung Opacity', 'Pneumonia', 'Pleural Effusion', 'Pleural Other',
+               'Fracture', 'Support Devices']
 hpc = False
-mode = 3
+mode = 1
 print(sys.argv)
 if (len(sys.argv) > 1 and sys.argv[1] == 'hpc'):
     hpc = True
     if (len(sys.argv) > 2):
         mode = int(sys.argv[2])
 
+pathology = pathologies[mode]
+print('pathology:', pathology)
 
-# In[75]:
+
+# In[20]:
 
 
 lr = 0.0002
-n_epochs = 30 if mode == 1 else 20
+n_epochs = 30
 n_cpu = 4 if hpc else 0
 batch_size = 128
+img_size = 256
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
-print(hpc, device, n_epochs, n_cpu)
+print(hpc, device, n_epochs, n_cpu, img_size)
 
 
-# In[76]:
+# In[21]:
 
 
 if (hpc):
@@ -65,9 +74,9 @@ if (hpc):
 
     df_train = pd.read_csv(labels_path_train)[:-1]
 else:
-    labels_path_train = '../../data/train/labels/labels.csv'
-    labels_path_test = '../../data/test/ids.csv'
-    img_dir = '../../data'
+    labels_path_train = '../data/train/labels/labels.csv'
+    labels_path_test = '../data/test/ids.csv'
+    img_dir = '../data'
 
     df_train = pd.read_csv(labels_path_train)
 
@@ -78,7 +87,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[77]:
+# In[22]:
 
 
 def parse_labels(df):
@@ -138,41 +147,19 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[78]:
+# In[23]:
 
 
-if (mode == 3):
-    # transform with random flipping/cropping and Gaussian blur (size 3 kernel):
-    transform = transforms.Compose([
-        transforms.Lambda(lambda image: image.convert('RGB')),
-        transforms.Resize((256, 256)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomCrop((256, 256)),
-        transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))
-    ])
-elif (mode == 4):
-    # transform with random flipping/cropping and Gaussian blur (size 5 kernel):
-    transform = transforms.Compose([
-        transforms.Lambda(lambda image: image.convert('RGB')),
-        transforms.Resize((256, 256)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomCrop((256, 256)),
-        transforms.GaussianBlur(kernel_size=(5, 5), sigma=(0.1, 2.0))
-    ])
-else:
-    # transform with random flipping and cropping:
-    transform = transforms.Compose([
-        transforms.Lambda(lambda image: image.convert('RGB')),
-        transforms.Resize((300, 300)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomCrop((256, 256))
-    ])
+# transform with random flipping and cropping:
+transform = transforms.Compose([
+    transforms.Lambda(lambda image: image.convert('RGB')),
+    transforms.Resize((300, 300)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomCrop((256, 256)),
+    transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))
+])
 
 training_data = TrainImageDataset(labels_path_train, img_dir, transform=transform)
 test_data = TestImageDataset(labels_path_test, img_dir, transform=transform)
@@ -186,7 +173,7 @@ val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True, num_w
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[79]:
+# In[24]:
 
 
 model = ResNet50(3)
@@ -197,12 +184,13 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[80]:
+# In[27]:
 
 
 # store metrics
 training_loss_history = np.zeros(n_epochs)
 validation_loss_history = np.zeros(n_epochs)
+early_stop = False
 
 for epoch in range(n_epochs):
     print(f'Epoch {epoch+1}/{n_epochs}:')
@@ -222,9 +210,21 @@ for epoch in range(n_epochs):
 
         # track training loss
         training_loss_history[epoch] += loss.item()
+
+        # check if stop
+        current_time = datetime.now()
+        time_difference = current_time - start_time
+        duration_in_s = time_difference.total_seconds() 
+        hours = divmod(duration_in_s, 3600)[0]
+        if (hours > 18):
+            early_stop = True
+            break
     
     training_loss_history[epoch] /= len(train_dataloader)
     print(f'Training Loss: {training_loss_history[epoch]:0.4f}')
+
+    if (early_stop):
+        break
 
     # validate
     with torch.no_grad():
@@ -241,7 +241,7 @@ for epoch in range(n_epochs):
     print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
 
-# In[81]:
+# In[13]:
 
 
 # get predictions on test set
@@ -253,13 +253,10 @@ with torch.no_grad():
         images, ids = images.to(device), ids.to(device)
         
         output = model(images).cpu()
-        if (mode == 2):
-            output = nn.functional.softmax(output)
-            output = (-1 * output[:, 0] + output[:, 2]) / 2
-        else:
-            output = torch.argmax(output, axis=1) - 1
+        output = nn.functional.softmax(output)
+        output = (-1 * output[:, 0] + output[:, 2]) / 2
         for preds, id in zip(output, ids):
-            rows_list.append([int(id)] + [preds])
+            rows_list.append([int(id)] + [float(preds)])
 
 df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
 df_output.head()
@@ -271,9 +268,8 @@ df_output.head()
 if (hpc):
     output_dir = '/groups/CS156b/2024/BroadBahnMi/predictions'
 else:
-    output_dir = '../../predictions'
+    output_dir = '../predictions'
 
-from datetime import datetime 
 time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
 filename = '_'.join(pathology.split()) + '_' + time
