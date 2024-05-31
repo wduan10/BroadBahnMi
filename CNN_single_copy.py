@@ -26,13 +26,13 @@ hpc = False
 if len(sys.argv) > 1 and sys.argv[1] == 'hpc':
     hpc = True 
 
-pathology = "Support Devices"
+pathology = "Fracture"
 
 classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
 lr = 0.0002
-n_epochs = 200
+n_epochs = 100
 batch_size = 256
 n_cpu = 4 if hpc else 0
 device = torch.device('cuda:0' if (torch.cuda.is_available()) else 'cpu')
@@ -141,17 +141,21 @@ for param in model.parameters():
     # Freezes weights
     param.requires_grad = False
 
-model.classifier = nn.Sequential(nn.Linear(1024, 512),
-                                 nn.ReLU(),
-                                 nn.Dropout(0.2),
-                                 nn.Linear(512, 3),
+model.classifier = nn.Sequential(nn.Linear(1024, 3),
+                                #  nn.ReLU(),
+                                #  nn.Dropout(0.2),
+                                #  nn.Linear(512, 3),
+                                 nn.Tanh()
                                  )
+
+criterion = nn.MSELoss()
+optimizer = optim.Adam(model.parameters())
 
 model = nn.DataParallel(model)
 model = model.to(device)
 
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
+# criterion = nn.CrossEntropyLoss()
+# optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 # store metrics
 training_loss_history = np.zeros(n_epochs)
