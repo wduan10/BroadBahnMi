@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=DenseNet
+#SBATCH --job-name=CNN
 #SBATCH --output=/central/groups/CS156b/2024/BroadBahnMi/%j.out
 #SBATCH --error=/central/groups/CS156b/2024/BroadBahnMi/%j.err
 #SBATCH -A CS156b
@@ -16,6 +16,6 @@
 
 source /home/wduan/venvs/CS156b/bin/activate
 
-cd /central/groups/CS156b/2024/BroadBahnMi/Wilson/DenseNet
+cd /central/groups/CS156b/2024/BroadBahnMi/CNN
 
-python DenseNet_default.py hpc 3
+python CNN_alt.py hpc 0

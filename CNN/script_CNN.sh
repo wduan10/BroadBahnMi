@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#SBATCH --job-name=DenseNet
+#SBATCH --job-name=CNN
 #SBATCH --output=/central/groups/CS156b/2024/BroadBahnMi/%j.out
 #SBATCH --error=/central/groups/CS156b/2024/BroadBahnMi/%j.err
 #SBATCH -A CS156b
-#SBATCH --time=24:00:00
+#SBATCH --time=6:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
@@ -16,6 +16,6 @@
 
 source /home/wduan/venvs/CS156b/bin/activate
 
-cd /central/groups/CS156b/2024/BroadBahnMi/Wilson/DenseNet
+cd /central/groups/CS156b/2024/BroadBahnMi/CNN
 
-python DenseNet_default.py hpc 3
+python CNN.py hpc 6

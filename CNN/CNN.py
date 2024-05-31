@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[17]:
+# In[4]:
 
 
 print('Importing')
@@ -21,20 +21,19 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 import numpy as np
-from ResNet import ResNet50
 from PIL import Image
 from datetime import datetime 
 print('Done importing')
 
 
-# In[18]:
+# In[5]:
 
 
 start_time = datetime.now()
 print(start_time)
 
 
-# In[19]:
+# In[6]:
 
 
 pathologies = ['No Finding', 'Enlarged Cardiomediastinum', 'Cardiomegaly',
@@ -52,19 +51,19 @@ pathology = pathologies[mode]
 print('pathology:', pathology)
 
 
-# In[20]:
+# In[7]:
 
 
 lr = 0.0002
-n_epochs = 30
+n_epochs = 20
 n_cpu = 4 if hpc else 0
-batch_size = 128
+batch_size = 32
 img_size = 256
 device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs, n_cpu, img_size)
 
 
-# In[21]:
+# In[8]:
 
 
 if (hpc):
@@ -87,7 +86,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[22]:
+# In[9]:
 
 
 def parse_labels(df):
@@ -147,7 +146,7 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[23]:
+# In[10]:
 
 
 # transform with random flipping and cropping:
@@ -158,25 +157,37 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
     transforms.RandomHorizontalFlip(),
     transforms.RandomCrop((256, 256)),
-    transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))
+    # transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))
 ])
 
 training_data = TrainImageDataset(labels_path_train, img_dir, transform=transform)
 test_data = TestImageDataset(labels_path_test, img_dir, transform=transform)
 
-train_size = int(0.8 * len(training_data))
-val_size = len(training_data) - train_size
-training_data, val_data = torch.utils.data.random_split(training_data, [train_size, val_size])
-
 train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
-val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[24]:
+# In[12]:
 
 
-model = ResNet50(3)
+model = nn.Sequential(
+    nn.Conv2d(3, 8, kernel_size=(3, 3)),
+    nn.BatchNorm2d(num_features=8),
+    nn.ReLU(),
+    nn.MaxPool2d(2),
+    nn.Dropout(p=0.1),
+
+    nn.Conv2d(8, 4, kernel_size=(3, 3)),
+    nn.BatchNorm2d(num_features=4),
+    nn.ReLU(),
+    nn.MaxPool2d(2),
+    nn.Dropout(p=0.1),
+
+    nn.Flatten(),
+    nn.Linear(62*62*4, 64),
+    nn.ReLU(),
+    nn.Linear(64, 3),
+)
 model = nn.DataParallel(model)
 model = model.to(device)
 
@@ -184,7 +195,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[27]:
+# In[14]:
 
 
 # store metrics
@@ -226,22 +237,8 @@ for epoch in range(n_epochs):
     if (early_stop):
         break
 
-    # validate
-    with torch.no_grad():
-        model.eval()
-        for i, data in enumerate(val_dataloader):
-            images, labels = data
-            images, labels = images.to(device), labels.to(device)
-            # forward pass
-            output = model(images)
-            # find loss
-            loss = criterion(output, labels)
-            validation_loss_history[epoch] += loss.item()
-        validation_loss_history[epoch] /= len(val_dataloader)
-    print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
-
-# In[13]:
+# In[15]:
 
 
 # get predictions on test set
