@@ -32,7 +32,7 @@ classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opa
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
 
 lr = 0.0002
-n_epochs = 100
+n_epochs = 20
 batch_size = 256
 n_cpu = 4 if hpc else 0
 device = torch.device('cuda:0' if (torch.cuda.is_available()) else 'cpu')
@@ -137,19 +137,19 @@ model = models.densenet121(weights=DenseNet121_Weights.DEFAULT)
 # Replace first convolutional layer to accept greyscale images
 model.features.conv0 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
-for param in model.parameters():
-    # Freezes weights
-    param.requires_grad = False
+# for param in model.parameters():
+#     # Freezes weights
+#     param.requires_grad = False
 
-model.classifier = nn.Sequential(nn.Linear(1024, 3),
-                                #  nn.ReLU(),
-                                #  nn.Dropout(0.2),
-                                #  nn.Linear(512, 3),
-                                 nn.Tanh()
-                                 )
+# model.classifier = nn.Sequential(nn.Linear(1024, 3),
+#                                 #  nn.ReLU(),
+#                                 #  nn.Dropout(0.2),
+#                                 #  nn.Linear(512, 3),
+#                                  nn.Tanh()
+#                                  )
 
-criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters())
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=lr)
 
 model = nn.DataParallel(model)
 model = model.to(device)
