@@ -26,7 +26,7 @@ hpc = False
 if len(sys.argv) > 1 and sys.argv[1] == 'hpc':
     hpc = True 
 
-pathology = "Pleural Effusion"
+pathology = "Pleural Other"
 
 classes = ["No Finding", "Enlarged Cardiomediastinum", "Cardiomegaly", "Lung Opacity",
            "Pneumonia", "Pleural Effusion", "Pleural Other", "Fracture", "Support Devices"]
@@ -148,6 +148,7 @@ model.classifier = nn.Sequential(nn.Linear(1024, 512),
                                  )
 
 model = nn.DataParallel(model)
+model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
