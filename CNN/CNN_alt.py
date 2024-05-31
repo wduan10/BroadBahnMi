@@ -55,7 +55,7 @@ print('pathology:', pathology)
 
 
 lr = 0.0002
-n_epochs = 20
+n_epochs = 20 if pathology == 'No Finding' else 10
 n_cpu = 4 if hpc else 0
 batch_size = 128
 img_size = 256
