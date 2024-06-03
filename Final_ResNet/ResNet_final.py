@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[17]:
+# In[1]:
 
 
 print('Importing')
@@ -27,14 +27,14 @@ from datetime import datetime
 print('Done importing')
 
 
-# In[18]:
+# In[2]:
 
 
 start_time = datetime.now()
 print(start_time)
 
 
-# In[19]:
+# In[3]:
 
 
 pathologies = ['No Finding', 'Enlarged Cardiomediastinum', 'Cardiomegaly',
@@ -52,11 +52,11 @@ pathology = pathologies[mode]
 print('pathology:', pathology)
 
 
-# In[20]:
+# In[4]:
 
 
 lr = 0.0002
-n_epochs = 30
+n_epochs = 25
 n_cpu = 4 if hpc else 0
 batch_size = 128
 img_size = 256
@@ -64,12 +64,12 @@ device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs, n_cpu, img_size)
 
 
-# In[21]:
+# In[5]:
 
 
 if (hpc):
     labels_path_train = '/groups/CS156b/data/student_labels/train2023.csv'
-    labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
+    labels_path_test = '/groups/CS156b/data/student_labels/solution_ids.csv'
     img_dir = '/groups/CS156b/data'
 
     df_train = pd.read_csv(labels_path_train)[:-1]
@@ -87,7 +87,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[22]:
+# In[6]:
 
 
 def parse_labels(df):
@@ -147,7 +147,7 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[23]:
+# In[7]:
 
 
 # transform with random flipping and cropping:
@@ -164,16 +164,11 @@ transform = transforms.Compose([
 training_data = TrainImageDataset(labels_path_train, img_dir, transform=transform)
 test_data = TestImageDataset(labels_path_test, img_dir, transform=transform)
 
-train_size = int(0.8 * len(training_data))
-val_size = len(training_data) - train_size
-training_data, val_data = torch.utils.data.random_split(training_data, [train_size, val_size])
-
 train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
-val_dataloader = DataLoader(val_data, batch_size=batch_size, shuffle=True, num_workers=n_cpu)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[24]:
+# In[8]:
 
 
 model = ResNet50(3)
@@ -184,7 +179,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[27]:
+# In[9]:
 
 
 # store metrics
@@ -226,22 +221,8 @@ for epoch in range(n_epochs):
     if (early_stop):
         break
 
-    # validate
-    with torch.no_grad():
-        model.eval()
-        for i, data in enumerate(val_dataloader):
-            images, labels = data
-            images, labels = images.to(device), labels.to(device)
-            # forward pass
-            output = model(images)
-            # find loss
-            loss = criterion(output, labels)
-            validation_loss_history[epoch] += loss.item()
-        validation_loss_history[epoch] /= len(val_dataloader)
-    print(f'Validation loss: {validation_loss_history[epoch]:0.4f}')
 
-
-# In[13]:
+# In[10]:
 
 
 # get predictions on test set
@@ -262,20 +243,25 @@ df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
 df_output.head()
 
 
-# In[29]:
+# In[11]:
 
 
 if (hpc):
     output_dir = '/groups/CS156b/2024/BroadBahnMi/predictions'
+    model_dir = '/groups/CS156b/2024/BroadBahnMi/models'
 else:
     output_dir = '../predictions'
+    model_dir = '../models'
 
 time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
 filename = '_'.join(pathology.split()) + '_' + time
 filename = filename.replace(' ', '_')
-full_path = os.path.join(output_dir, f'preds_{filename}.csv')
+full_path = os.path.join(output_dir, f'final_preds_{filename}.csv')
 df_output.to_csv(full_path, index=False)
+
+model_path = os.path.join(model_dir, f'res_{filename}.pt')
+torch.save(model.state_dict(), model_path)
 
 
 # In[ ]:
