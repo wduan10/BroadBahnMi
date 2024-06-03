@@ -55,7 +55,7 @@ print('pathology:', pathology)
 
 
 lr = 0.0002
-n_epochs = 20
+n_epochs = 15
 n_cpu = 4 if hpc else 0
 batch_size = 32
 img_size = 256
@@ -68,7 +68,7 @@ print(hpc, device, n_epochs, n_cpu, img_size)
 
 if (hpc):
     labels_path_train = '/groups/CS156b/data/student_labels/train2023.csv'
-    labels_path_test = '/groups/CS156b/data/student_labels/test_ids.csv'
+    labels_path_test = '/groups/CS156b/data/student_labels/solution_ids.csv'
     img_dir = '/groups/CS156b/data'
 
     df_train = pd.read_csv(labels_path_train)[:-1]
@@ -259,24 +259,23 @@ df_output = pd.DataFrame(rows_list, columns=['Id', pathology])
 df_output.head()
 
 
-# In[29]:
+# In[ ]:
 
 
 if (hpc):
     output_dir = '/groups/CS156b/2024/BroadBahnMi/predictions'
+    model_dir = '/groups/CS156b/2024/BroadBahnMi/models'
 else:
     output_dir = '../predictions'
+    model_dir = '../models'
 
 time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
 filename = '_'.join(pathology.split()) + '_' + time
 filename = filename.replace(' ', '_')
-full_path = os.path.join(output_dir, f'preds_{filename}.csv')
+full_path = os.path.join(output_dir, f'cnn_preds_{filename}.csv')
 df_output.to_csv(full_path, index=False)
 
-
-# In[ ]:
-
-
-
+model_path = os.path.join(model_dir, f'cnn_{filename}.pt')
+torch.save(model.state_dict(), model_path)
 
