@@ -56,8 +56,7 @@ print('pathology:', pathology)
 
 
 lr = 0.0002
-# n_epochs = 25
-n_epochs = 1
+n_epochs = 25
 n_cpu = 4 if hpc else 0
 batch_size = 128
 img_size = 256
@@ -114,8 +113,8 @@ class TrainImageDataset(Dataset):
         img_path = row['Path']
         img_path = os.path.join(self.img_dir, img_path)
 
-        image = Image.open(img_path) # PIL image for applying transform for pre-trained ResNet model 
-        label_num = row[-1] + 1 # -1 => 0, 0 => 1, 1 => 2
+        image = Image.open(img_path) # PIL image for applying transform for pre-trained ResNet model
+        label_num = list(row)[-1] + 1 # -1 => 0, 0 => 1, 1 => 2
         label = torch.tensor(label_num).long()
 
         if self.transform:

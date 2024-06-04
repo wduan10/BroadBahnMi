@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[4]:
+# In[1]:
 
 
 print('Importing')
@@ -26,14 +26,14 @@ from datetime import datetime
 print('Done importing')
 
 
-# In[5]:
+# In[2]:
 
 
 start_time = datetime.now()
 print(start_time)
 
 
-# In[6]:
+# In[3]:
 
 
 pathologies = ['No Finding', 'Enlarged Cardiomediastinum', 'Cardiomegaly',
@@ -51,7 +51,7 @@ pathology = pathologies[mode]
 print('pathology:', pathology)
 
 
-# In[7]:
+# In[4]:
 
 
 lr = 0.0002
@@ -63,7 +63,7 @@ device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
 print(hpc, device, n_epochs, n_cpu, img_size)
 
 
-# In[8]:
+# In[5]:
 
 
 if (hpc):
@@ -86,7 +86,7 @@ print(df_train.head())
 print(df_test.head())
 
 
-# In[9]:
+# In[18]:
 
 
 def parse_labels(df):
@@ -113,7 +113,7 @@ class TrainImageDataset(Dataset):
         img_path = os.path.join(self.img_dir, img_path)
 
         image = Image.open(img_path) # PIL image for applying transform for pre-trained ResNet model 
-        label_num = row[-1] + 1 # -1 => 0, 0 => 1, 1 => 2
+        label_num = list(row)[-1] + 1 # -1 => 0, 0 => 1, 1 => 2
         label = torch.tensor(label_num).long()
 
         if self.transform:
@@ -146,7 +146,7 @@ class TestImageDataset(Dataset):
         return image, label
 
 
-# In[10]:
+# In[19]:
 
 
 # transform with random flipping and cropping:
@@ -167,7 +167,7 @@ train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
 
-# In[12]:
+# In[20]:
 
 
 model = nn.Sequential(
@@ -195,7 +195,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
-# In[14]:
+# In[21]:
 
 
 # store metrics

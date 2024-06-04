@@ -114,7 +114,7 @@ class TrainImageDataset(Dataset):
         img_path = os.path.join(self.img_dir, img_path)
 
         image = Image.open(img_path) # PIL image for applying transform for pre-trained ResNet model 
-        label_num = row[-1] + 1 # -1 => 0, 0 => 1, 1 => 2
+        label_num = list(row)[-1] + 1 # -1 => 0, 0 => 1, 1 => 2
         label = torch.tensor(label_num).long()
 
         if self.transform:
