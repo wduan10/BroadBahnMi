@@ -56,7 +56,7 @@ print('pathology:', pathology)
 
 
 lr = 0.0002
-n_epochs = 1
+n_epochs = 25
 n_cpu = 4 if hpc else 0
 batch_size = 128
 img_size = 256
